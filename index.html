@@ -122,9 +122,25 @@
 
 <!-- Tab: Characters -->
 <div id="tab-characters" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="characterGrid"></div>
-  <div class="mt-6">
-    <button onclick="addCharacter()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加人物</button>
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册人物</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500"><h3 class="font-bold text-amber-300">头号背锅人</h3><p class="text-xs text-gray-400">正账者创始人</p><p class="text-gray-300 text-sm mt-1">第一个自愿替万民承担因果的工头。用肉身硬接数万人劳震，双臂从此无法弯曲。</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500"><h3 class="font-bold text-amber-300">卢修斯·铁手</h3><p class="text-xs text-gray-400">铁锈工坊执政官 / 清账者</p><p class="text-gray-300 text-sm mt-1">唯一主动削减大勋作规模的执政官。弹劾前夜独自承接无楔劳震。终溃为闭眼黄铜雕像。</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-purple-500"><h3 class="font-bold text-purple-300">无名修女</h3><p class="text-xs text-gray-400">天国圣座 / 清账者</p><p class="text-gray-300 text-sm mt-1">十一年站在唱诗班孩童前方。「我没有救任何人。但我每次都站在他们前面。」</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-blue-500"><h3 class="font-bold text-blue-300">寒铁</h3><p class="text-xs text-gray-400">极北精算师 / 清账者</p><p class="text-gray-300 text-sm mt-1">伪造更低死亡数字23年，避免约四万人过劳死亡。「我以为算得出来就有责任。」</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-red-500"><h3 class="font-bold text-red-300">泥足先生</h3><p class="text-xs text-gray-400">神州流官考课制创始人</p><p class="text-gray-300 text-sm mt-1">建立流官考课制。汞变解蔓延至颈部。最后政令死后第十三年被废除。</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-emerald-500"><h3 class="font-bold text-emerald-300">主角（无名）</h3><p class="text-xs text-gray-400">穿越者 / 复式记账法</p><p class="text-gray-300 text-sm mt-1">来自另一个地球。名字在大账上半秒后被绝墨碎屑侵蚀消失。唯一能让大账局部逻辑停滞的人。</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-violet-500"><h3 class="font-bold text-violet-300">第三号孩子</h3><p class="text-xs text-gray-400">赎罪券黑市创建者</p><p class="text-gray-300 text-sm mt-1">无名修女保护对象。死前：够了。这些年够了。</p></div>
+      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-indigo-500"><h3 class="font-bold text-indigo-300">第十七号孩子</h3><p class="text-xs text-gray-400">零度真理社成员</p><p class="text-gray-300 text-sm mt-1">有一个人曾经每次都站在我前面。我一直觉得我应该用这件事做些什么。</p></div>
+    </div>
+  </div>
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📖 人间仍存人物（可编辑）</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="characterGrid"></div>
+    <div class="mt-6">
+      <button onclick="addCharacter()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加人物</button>
+    </div>
   </div>
 </div>
 
@@ -139,6 +155,42 @@
       <h3 class="text-lg font-bold mb-4 text-gray-200">关系列表</h3>
       <div id="relationList" class="space-y-3"></div>
       <button onclick="addRelation()" class="mt-4 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加关系</button>
+  <!-- 万流名册组织关系 -->
+  <div class="mt-8">
+    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册组织与关系</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-red-400">四大隐秘组织</h3>
+        <div class="mt-2 space-y-2 text-sm">
+          <p><b class="text-gray-200">匿痕无缝社</b>：代价是一段历史。擦除病变记录，历史也从记忆消失。</p>
+          <p><b class="text-gray-200">背债银号</b>：把溃变卖给不知情的人。委员会：暂不处理。</p>
+          <p><b class="text-gray-200">彻查终局派</b>：追求空账。区别只是我们要推迟，他们要提前。</p>
+          <p><b class="text-gray-200">骨鸣知行会</b>：大账可以被改，骨头不会撒谎。</p>
+        </div>
+      </div>
+      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-blue-400">边缘途径</h3>
+        <div class="mt-2 space-y-2 text-sm">
+          <p><b class="text-gray-200">彻行者</b>：凡人血肉硬顶。最终碑化。凡人可以自己承接，只是代价很大。</p>
+          <p><b class="text-gray-200">朱批客</b>：在账本缝隙偷取寿命。纯粹派 vs 干涉派。</p>
+          <p><b class="text-gray-200">地脉鸣冤者</b>：唯物结界，超凡全失效。「用脏手做干净的事。」</p>
+          <p><b class="text-gray-200">绝迹者</b>：体内融合绝墨碎屑。「不是来赢的，是来让它变得没有意义的。」</p>
+        </div>
+      </div>
+      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-amber-400">审计委员会</h3>
+        <div class="mt-2 space-y-2 text-sm">
+          <p>无军队、无欺天楔。权力来自信息垄断和因果中立性。</p>
+          <p><b class="text-gray-200">核算派</b>：记录不是改变。 <b class="text-gray-200">干涉派</b>：只记录不干涉就是默许。 <b class="text-gray-200">第三条路</b>：在档案边角写下本不该被记录的东西。</p>
+        </div>
+      </div>
+      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-purple-400">跨地域暗线</h3>
+        <div class="mt-2 space-y-2 text-sm">
+          <p>• 铁锈工坊 ↔ 极北：碎卷海黑市间接交换，蜂群推算元老院崩溃早于方舟完工13年</p>
+          <p>• 神州 ↔ 太阳露台：汞变解与木化溃变机制有未知相似性</p>
+          <p>• 圣座 ↔ 极西：银号秘密运输脂化香蜡作为凝血剂原料</p>
+          <p>• 因果方舟：极北蜂群完全知情（含410万人命运），选择沉默</p>
+        </div>
+      </div>
+    </div>
+  </div>
     </div>
   </div>
 </div>
