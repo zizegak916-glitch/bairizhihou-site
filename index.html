@@ -144,12 +144,136 @@
 
 <!-- Tab: World Settings -->
 <div id="tab-world" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="worldGrid"></div>
-  <div class="mt-6">
-    <button onclick="addWorldSetting()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加设定</button>
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- 势力与制度 -->
+    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
+      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
+        <span class="text-2xl">🏛️</span> 势力与制度
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-blue-500">
+          <h3 class="font-bold text-blue-300 mb-2">神州官制</h3>
+          <p class="text-gray-300 text-sm">五品至从三品：官僚机器可自行运转的实权层，靠任书、司印、会推。</p>
+          <p class="text-gray-400 text-sm mt-1">从三品以上：国朝名分承接位，必须借玺书旧式或皇帝名分才能坐实。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-yellow-500">
+          <h3 class="font-bold text-yellow-300 mb-2">奉玺派</h3>
+          <p class="text-gray-300 text-sm">代表：顾廷璋（尚宝司卿）<br>核心：借皇帝名分承功，不是崇拜名器，而是空皇帝承功。</p>
+          <p class="text-gray-400 text-sm mt-1 italic">「国朝虽无临御之帝，皇帝名分未绝。大水之功，不可归一臣。」</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-red-500">
+          <h3 class="font-bold text-red-300 mb-2">承功派</h3>
+          <p class="text-gray-300 text-sm">代表：裴玄纪（水衡司右都水使，从三品附近）<br>核心：裴玄纪以真名承大改淮功，绕开"更高官位需皇帝名分"限制。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-green-500">
+          <h3 class="font-bold text-green-300 mb-2">分功派</h3>
+          <p class="text-gray-300 text-sm">代表：沈确（都察院右佥都御史）<br>核心：大功拆给诸司、历任、各段治水链，不让裴玄纪独吃。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-purple-500">
+          <h3 class="font-bold text-purple-300 mb-2">中立派</h3>
+          <p class="text-gray-300 text-sm">代表：姚观澜（通政司右通政）<br>核心：不押谁，看哪套说法能活到最后。章奏口决定材料先到谁手里。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-gray-500">
+          <h3 class="font-bold text-gray-300 mb-2">清册线</h3>
+          <p class="text-gray-300 text-sm">代表：杜衡（水衡司经历司主簿）<br>核心：清底册、洗盘子。不是吃功的人，是给吃功的人洗盘子。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 超凡体系 -->
+    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
+      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
+        <span class="text-2xl">⚡</span> 超凡体系
+      </h2>
+      <div class="space-y-4">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h3 class="font-bold text-amber-300 mb-2">大账</h3>
+          <p class="text-gray-300 text-sm">盲目的结果主义。不认科技，不认过程，只认结果。只要"普通人做不成的事"成立，就立刻结算：成果、能力、代价，一起落下。第一批科学家、工程师死得快，因为大账只认超额结果。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h3 class="font-bold text-amber-300 mb-2">楔（欺天楔）</h3>
+          <p class="text-gray-300 text-sm">本质是做假账。通过把过程、解释、承接者重新写进历史，把真账改写成假账。假账没做完、没定稿、结局没落死之前，大账不会结算。没结算就没有成果、没有能力、更没有代价——不是晚到，是根本没有。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h3 class="font-bold text-amber-300 mb-2">代价本质</h3>
+          <p class="text-gray-300 text-sm">能力不属于自身的排异。无论是平账、假账还是亲自做成的，只要大账判定你完成了一件普通人无法搞定的事，都会获得能力同时获得代价。</p>
+          <p class="text-gray-400 text-sm mt-1">例外：地脉鸣冤者不被账影响；其余旧日力量获得者受账影响较小。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 核心能力 -->
+    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
+      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
+        <span class="text-2xl">🔥</span> 核心能力
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-red-600">
+          <h3 class="font-bold text-red-300">一帝·许渡（止泽帝）<br><span class="text-sm text-gray-400">能力：断</span></h3>
+          <p class="text-gray-300 text-sm mt-2">凡是已经开始往后接、往外长、往完整结果去成的东西，大部分都能被断掉。断的是延续，不是存在本身。不分善恶。</p>
+          <p class="text-gray-400 text-sm mt-1">大账结果：<span class="text-red-300">大泽止步</span></p>
+          <p class="text-gray-400 text-sm">代价：被断住的东西全都堆到他身上，反过来把他断掉。死得极惨。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-orange-600">
+          <h3 class="font-bold text-orange-300">二帝·沈行之（续命帝）<br><span class="text-sm text-gray-400">能力：接续</span></h3>
+          <p class="text-gray-300 text-sm mt-2">让已经断开的东西续上，也让本来不断、但还没完全长出后半截的东西更快接上。不分善恶。</p>
+          <p class="text-gray-400 text-sm mt-1">大账结果：<span class="text-orange-300">百断续行</span></p>
+          <p class="text-gray-400 text-sm">代价：乱接，并且疯长。被自己强行接起来的东西反过来把自己接坏了。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-cyan-600">
+          <h3 class="font-bold text-cyan-300">末帝·李承晦（两时帝）<br><span class="text-sm text-gray-400">能力：两时 + 钉一瞬</span></h3>
+          <p class="text-gray-300 text-sm mt-2">原能力：看稳定未来 + 御极定域。获两时后将未来状态定到现在。来到现时后：钉一瞬——截取未来一瞬替换当前状态。</p>
+          <p class="text-gray-400 text-sm mt-1">无欺天楔的现实篡改。收藏家优先更高的藏品。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-emerald-600">
+          <h3 class="font-bold text-emerald-300">陆执灯<br><span class="text-sm text-gray-400">能力：照缝 + 撑缝</span></h3>
+          <p class="text-gray-300 text-sm mt-2">照出一笔账、一段历史、一个结论里还没彻底写死的缝，短时间内撑住。不能无中生有，只能作用于本来就存在裂口之处。</p>
+          <p class="text-gray-400 text-sm mt-1">代价：越看越只能看到裂口，看不到圆满。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-violet-600">
+          <h3 class="font-bold text-violet-300">陈亦/沈怀<br><span class="text-sm text-gray-400">能力：墨未干 → 补痕 → 候</span></h3>
+          <p class="text-gray-300 text-sm mt-2"><b>墨未干</b>（沈怀原有）：看见账还没干。<br><b>补痕</b>（陈亦新长）：顺着已有痕迹继续长出账面结果。<br><b>候</b>（卷末触发）：在结果即将落成时暂不落。</p>
+          <p class="text-gray-400 text-sm mt-1">三者共生：墨未干看湿，补痕续痕，候悬账。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-sky-600">
+          <h3 class="font-bold text-sky-300">谢观成<br><span class="text-sm text-gray-400">能力：定水线</span></h3>
+          <p class="text-gray-300 text-sm mt-2">在现实水势中划出物理边界，使水位、水势被强行分开。只能划单线或短折线，不能闭环，不能消灭水灾。</p>
+          <p class="text-gray-400 text-sm mt-1">代价：挡得越大身体越被"划线"，最终人格和身体被水线切开。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-pink-600">
+          <h3 class="font-bold text-pink-300">曹留<br><span class="text-sm text-gray-400">能力：听声 / 截声 / 回声定位</span></h3>
+          <p class="text-gray-300 text-sm mt-2">听声辨真：从声音听出断续。截声：削掉声音节奏让对方动作慢半拍。回声定位：不用看也知道谁听见了什么。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 关键事件 -->
+    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
+      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
+        <span class="text-2xl">📌</span> 关键事件与地点
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">🌊</div>
+          <h3 class="font-bold text-blue-300">大泽止步</h3>
+          <p class="text-gray-400 text-sm mt-1">一帝大账结果。大泽来了也吞了很多，但最后停在这里了。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">🔗</div>
+          <h3 class="font-bold text-orange-300">百断续行</h3>
+          <p class="text-gray-400 text-sm mt-1">二帝大账结果。断口被续起来，还能继续往下走。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">💧</div>
+          <h3 class="font-bold text-cyan-300">大改淮</h3>
+          <p class="text-gray-400 text-sm mt-1">治水大工程。三派争功核心事件，贯穿第一卷。</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
-
 <!-- Tab: Worldbuilding (世界观) -->
 <div id="tab-worldbuilding" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
   <!-- 势力版图 -->
@@ -225,28 +349,461 @@
 
 <!-- Tab: Patches (补丁集) -->
 <div id="tab-patches" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <!-- 补丁列表 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">🔧 补丁列表</h2>
-    <div id="patchesList" class="space-y-3"></div>
-    <button onclick="addPatch()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加补丁</button>
-  </div>
+  <div class="max-w-5xl mx-auto space-y-4">
 
-  <!-- 待办区 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📋 待办</h2>
-    <div id="todosList" class="space-y-2"></div>
-    <button onclick="addTodo()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加待办</button>
-  </div>
+    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4 mb-6">
+      <p class="text-gray-300 text-sm">设定整理合并版·第二版。涵盖：大账与楔机制、总时间线、九帝体系、核心人物能力、超凡体系、官制、派系人物等。<br>点击各部分标题展开/折叠。</p>
+    </div>
 
-  <!-- 版本记录 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📝 版本记录</h2>
-    <div id="versionsList" class="space-y-3"></div>
-    <button onclick="addVersion()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加版本</button>
+    <!-- 1. 大账与楔机制 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❶</span>
+        <span class="font-bold text-gray-200">大账与楔机制</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-amber-300 mb-2">没有楔时</h4>
+          <p>大账是盲目的结果主义。它不认科技，不认过程，只认结果。只要一件"普通人做不成的事"成立，就立刻结算：成果、能力、代价，一起落下。所以第一批科学家、工程师、实干家死得快，不是因为他们接近真相，而是因为他们不断做成普通人做不成的事。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-amber-300 mb-2">有楔时</h4>
+          <p>楔的本质不是拖延代价，不是先拿成果。<b>楔的本质是：做假账。</b>它通过把过程、解释、承接者、成立方式重新写进历史，把原本会被直接结算的真账改写成另一条能成立的假账。假账没做完、没定稿、结局没落死之前，大账不会结算。必须钉死：没结算就没有成果、也没有能力、更没有代价。不是晚到，是根本没有。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-amber-300 mb-2">真账已先结后</h4>
+          <p>如果真账已经先结了，后面再动楔，就不再是补写，而是：抢已结算结果。难度来自原承接者、既得利益链、已经形成的解释链、已经开始长出的现实后果。所以：如果没人反对，就没有阻力。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-amber-300 mb-2">代价本质</h4>
+          <p>账的代价本质是：能力不属于自身的排异。无论是平账、假账还是事情本来就是你亲自做成的，只要大账判定你完成了一件普通人无法搞定的事，都会获得能力，同时获得代价。</p>
+          <p class="text-gray-400 mt-1">例外：地脉鸣冤者不被账影响。其余旧日力量获得者受账影响较小。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 2. 总时间线骨架 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❷</span>
+        <span class="font-bold text-gray-200">总时间线骨架</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-blue-300 mb-2">总背景</h4>
+          <p>这是一个<b>持续失血四百年但没有断掉</b>的文明。不是文明断层，不是废土重启。学校、档案、工程学、委员会、技术传承、地方制度都还存在。</p>
+        </div>
+        <div class="flex items-center gap-4 bg-gray-700/40 rounded-lg p-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-red-400">0-20年</div>
+            <div class="text-xs text-gray-400">灾后</div>
+          </div>
+          <div class="flex-1 text-sm">
+            <p class="font-bold text-gray-200">现代国家残骸硬顶期</p>
+            <p class="text-gray-400">不是皇朝阶段。科学家、工程师、实干者、国家机器最后的现代骨架还在。他们普遍活到灾后15到20年左右。</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 bg-gray-700/40 rounded-lg p-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-orange-400">~83年</div>
+            <div class="text-xs text-gray-400">九帝</div>
+          </div>
+          <div class="flex-1 text-sm">
+            <p class="font-bold text-gray-200">帝系阶段</p>
+            <p class="text-gray-400">灾后15-20年后九帝才真正成形。末帝死于灾后100多年。</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 3. 一帝许渡 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❸</span>
+        <span class="font-bold text-gray-200">一帝·许渡（止泽帝）·完整整理</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <p><b>本名：</b>许渡</p>
+          <p><b>生时称呼：</b>许公（官面）/ 渡公（灾民、河工——他们感受到的是：他把人往对岸送过去）</p>
+          <p><b>后世正史：</b>止泽帝</p>
+          <p><b>沉痛私传：</b>半世公（扛出来的不是完整旧世界，是半条命）</p>
+          <p><b>年号：</b>续统</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">被推上去的过程</h4>
+          <p>那一代人的目标是救世界，不是建国，不是称帝。一开始很多人各自真做事、各自有账、各自有超凡，这些是散的。后来主动做出一个假总账，让一个人去扛大梁。许渡不是被动捡漏，是被一整代超凡者主动推出去扛的人。当假账往许渡身上压时，前面那些人的超凡会跌落——他们主动把承接位置剥下去。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">前期为什么没有超凡</h4>
+          <p>许渡前期一直故意不让自己的账结算——他一直在做一笔没做完的个人假账。假账没做完就不会结算，所以没有成果、没有能力、没有代价。最开始有避代价的一面，但后来方向变了：不是为了活更久，而是给世界争时间。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">超凡：断</h4>
+          <p>凡是已经开始往后接、往外长、往完整结果去成的东西，到了他这里，大部分都能被断掉。对象包括人、山、河，甚至某种因果。</p>
+          <p class="mt-1"><b>能断：</b>已经开始成形的东西，还带着"后半截"的东西。</p>
+          <p><b>不能断：</b>还没开始的，已经彻底落死的，没有后续可接的。</p>
+          <p><b>性质：</b>不带善恶判断。可能断掉洪水的后半截，也可能断掉某段本来会继续往前走的希望。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">为什么"断"够用</h4>
+          <p>"大泽止步"不是大泽没来，而是它来了、吞了，但没有继续到底。"断"恰好能让继续往后长的那一截没了。不是精准回答了题目，而是碰巧够用。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">为什么死得极惨</h4>
+          <p>他不是把那些东西消灭了，他只是把它们断住了。被断住的东西并不会凭空蒸发。最后，别处没继续往前走的那部分全都堆在他身上。他的死不是普通反噬，更像：他把别的东西都断在外面，最后自己被这些东西反过来断掉。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-red-300 mb-2">大账结果形式</h4>
+          <p><b>大泽止步</b>——大泽已经来了，也吞了很多，但最后它停在这里了。这是结果，不是评价。"黄淮未失其治"是后来写进史书给人看的总解释，位置降一级。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 4. 末帝李承晦 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❹</span>
+        <span class="font-bold text-gray-200">末帝·李承晦（两时帝）·完整整理</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <p><b>本名：</b>李承晦（"承"承位承接，"晦"晦暗隐而未显——在将晦未晦之间坐着的人）</p>
+          <p><b>正史：</b>末帝</p>
+          <p><b>知情者私称：</b>两时帝</p>
+          <p><b>更深禁称：</b>裂藏者（收藏家相关线）</p>
+          <p><b>年号：</b>候时（扣住他前半生最重要的动作——等）</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-cyan-300 mb-2">原初两条核心能力</h4>
+          <p><b>第一能力：看稳定的未来</b>——不是全知，只能看见已经相对成形、闭合、连续的未来线。能看见神州终局，看不真切碎卷海，看不到沉淀百相。</p>
+          <p class="mt-2"><b>第二能力：御极定域</b>——在帝制仍成立的前提下，把中枢范围强行定成"御前秩序"。让皇权现实先服从他所定义。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-cyan-300 mb-2">转折：未来奏折</h4>
+          <p>一卷奏折突兀出现在御前（不是正常递上来的东西）。他打开一点，看到了<b>时间</b>和<b>御前未批</b>。确认：未来真实存在，未来可以回流，御前接口不只管现在。从此获得<b>两时</b>——第一次真正同时接上"现在"与"未来"两个时层。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-cyan-300 mb-2">将未来状态定到现在</h4>
+          <p>用"两时"与"御极定域"的结合，将未来神州的状态直接定到现在。不是借未来身，不是单挑更强，是把未来神州的状态直接定到现在。</p>
+          <p class="mt-1"><b>后果：</b></p>
+          <p>① 未来被真正改动，至少收藏家的"既定"未来被打碎了一条缝</p>
+          <p>② 成为收藏家优先更高的藏品，祂的神选遇到末帝时会失控</p>
+          <p>③ 没有欺天楔的现实篡改——比普通假账更高级</p>
+          <p>④ 那段历史无法再被欺天楔改动</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-cyan-300 mb-2">来到现时</h4>
+          <p>改写完成后本人来到现在时空。这里没有帝制，<b>御极定域完整消失</b>（不是削弱，是没了）。</p>
+          <p class="mt-2"><b>现时看的能力：</b>普通时空只能看唯一一条既定未来线；不稳定时空才能看几种可能；能在沉淀百相中看到一定"沉淀的时间"。</p>
+          <p class="mt-2"><b>现时用的能力：钉一瞬</b>——在一定时间的未来中，钉一瞬到现在，用那个瞬间的状态替换他人或自己的当前状态。普通时空沿唯一线截取；不稳定时空能选几种可能但更难。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 5. 陆执灯 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❺</span>
+        <span class="font-bold text-gray-200">陆执灯·照缝</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-emerald-300 mb-2">能力核心</h4>
+          <p>陆不是"看穿真相"，不是"让假账失效"，更不是"直接改写结果"。</p>
+          <p class="mt-2"><b>第一层·照缝：</b>看见一笔账、一段历史、一个结论里，还没彻底写死的那一道缝。</p>
+          <p><b>第二层·撑缝：</b>不是推翻结论，而是让这一下先别合上，把这道缝短时间撑住。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-emerald-300 mb-2">能照出什么</h4>
+          <p><b>账里的缝：</b>一笔补录还没彻底补平，一个名字还没完全按进去，一份结论快成了但还没落章。</p>
+          <p><b>人里的缝：</b>被写成某个身份但还没完全贴死，死人该被销掉了但还有一点没销干净。</p>
+          <p><b>历史里的缝：</b>表面被解释完了但内里还有一处没压实，一次劳震结果已定但最后承接对象还没闭死。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-emerald-300 mb-2">战斗用法</h4>
+          <p>让动作接不上（第二下接不上）、让伤闭不上（已开的伤口缝被撑住）、让阵势合不拢（合围差半拍）、让"致命结论"晚一步（"现在就死"先别完全合上）。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-emerald-300 mb-2">限制</h4>
+          <p>只能照"本来就有的缝"（不能无中生有）；只能撑不是改（不能把黑写成白）；时间短（越大的账撑开时间越短）。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-emerald-300 mb-2">代价</h4>
+          <p>缝不是白撑的。撑住的东西都会反过来压灯、压眼、压神。长期盯缝会导致：灯越亮自己越看不清"完整的东西"。越来越容易看到裂口，看不到圆满。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-emerald-600">
+          <p class="italic text-emerald-200">「陆执灯没有救陈亦，也没有放陈亦走，它只是把所有人的手都按住了。」</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 6. 二帝沈行之 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❻</span>
+        <span class="font-bold text-gray-200">二帝·沈行之（续命帝）</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <p><b>本名：</b>沈行之（"行"天然带着"继续往下走"）</p>
+          <p><b>正史：</b>续命帝 / <b>民间：</b>接命公 / <b>私传：</b>续尾者</p>
+          <p><b>年号：</b>再行</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-orange-300 mb-2">核心目标</h4>
+          <p>面对一帝留下的断口世界：河断、路断、工断、账断、命断、因果断。那一代的目标不是盛世，而是：续上。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-orange-300 mb-2">超凡：接续</h4>
+          <p>让已经断开的东西续上，也让本来不断、但还没完全长出后半截的东西更快接上。能作用于河、路、命、账、因果。</p>
+          <p class="mt-1"><b>最早神迹：</b>不是断河复流，而是接命。本该断掉的命又被硬接上了。</p>
+          <p><b>不分善恶：</b>好的能被续，坏的也能被续。</p>
+          <p><b>代价：乱接，并且疯长。</b>不该接的也被接上，接上速度太快，错的也往下长。被自己强行接起来的东西反过来把自己接坏了。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <p><b>大账结果形式：百断续行</b>——本来断成很多截，最后这些断口被续起来，并且还能继续往下走。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 7. 九帝分期 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❼</span>
+        <span class="font-bold text-gray-200">九帝分期框架</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 text-sm text-gray-300">
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-red-400 font-bold w-6">一</span>
+            <div><b class="text-red-300">断</b> — 救世界，止大泽</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-orange-400 font-bold w-6">二</span>
+            <div><b class="text-orange-300">接续</b> — 让断口继续往下走</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-yellow-400 font-bold w-6">三</span>
+            <div><b class="text-yellow-300">定承</b> — 开始把"谁来扛"固定下来。有格式，但帝制影响还没大到塑能力本体</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-green-400 font-bold w-6">四</span>
+            <div><b class="text-green-300">成制</b> — 把承接变成可复制、可训练、可制度化的东西。帝制开始成形，但还没反噬全国</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-teal-400 font-bold w-6">五</span>
+            <div><b class="text-teal-300">对冲</b> — 外域与其他稳定势力开始影响神州，神州必须对冲外部成果和压力</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-cyan-400 font-bold w-6">六</span>
+            <div><b class="text-cyan-300">并承</b> — 神州开始往外吞成果、吞解释权、吞承接资格</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-blue-400 font-bold w-6">七</span>
+            <div><b class="text-blue-300">反索</b> — 帝制开始反向索取全国。全国为了让帝制继续有效而主动生产可承接结果</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
+            <span class="text-purple-400 font-bold w-6">八</span>
+            <div><b class="text-purple-300">倒写</b> — 先按帝制需要写，再按现实去活。全国已习惯为假账服务，现实开始后补</div>
+          </div>
+          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3 border-l-2 border-indigo-500">
+            <span class="text-indigo-400 font-bold w-6">末</span>
+            <div><b class="text-indigo-300">两时</b> — 改未来，来到现时（见第四部分）</div>
+          </div>
+        </div>
+        <div class="mt-4 bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-gray-200 mb-2">关键区分</h4>
+          <p>一到二帝：救世界延续，拿人去扛账。三到四帝：帝制雏形，人仍主导。五到六帝：神州稳定成体系，帝制和世界互相喂养。七到八帝：<b>帝制成了默认真实</b>，全国反过来替帝制生产可承接结果——不是皇帝带着全国做假账，而是为了让帝制继续成立，全国主动生产可被帝制承接的结果。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 8. 陈亦/沈怀超凡体系 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❽</span>
+        <span class="font-bold text-gray-200">陈亦/沈怀·超凡体系（墨未干→补痕→候）</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-violet-300 mb-2">墨未干（沈怀原有）</h4>
+          <p>来自水衡司录房录事位置。一笔账只要还没有彻底入册、封存、归档、结清，在沈怀眼里就像墨还没干。</p>
+          <p class="mt-1"><b>能做：</b>察觉哪页被动过，哪个名字和账气不贴，某个超凡背后的账口正在泛动。能轻轻拨一下未干之处，但只能轻拨不能改写。</p>
+          <p><b>代价：</b>录房低位病。体弱、胸冷、药味重、墨气入肺、潮气入身。</p>
+          <p class="text-gray-400 italic">一句话：墨未干让他知道哪里还能碰。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-violet-300 mb-2">补痕（陈亦新长出）</h4>
+          <p>由三件东西撞出来：沈怀原有的墨未干 + 绝墨落子擦断账线留下的断痕 + 陈亦对"账落错人"的特殊敏感。</p>
+          <p class="mt-1"><b>本质：</b>顺着现在留下的一道痕，让它继续长出它本来指向的账面结果。痕是起点，补痕让痕继续往前长。</p>
+          <p class="mt-1"><b>能做：</b>顺着痕迹补出被遮住的账面关系；让旧关系重新被读取；维持沈怀身份的部分连续性。</p>
+          <p><b>不能做：</b>封禁别人、改未来、凭空造事实、补没有痕迹的东西、治好身体病根。必须依赖已有痕迹。</p>
+          <p><b>代价：</b>那段账会先压在陈亦身上——补水痕像重新进水，补印痕胸口承余损，补工牌手腕像被河底拖住。</p>
+          <p class="text-gray-400 italic">一句话：补痕让痕继续往前长。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-violet-300 mb-2">绝墨落子</h4>
+          <p>不是陈亦主动拥有的超凡，而是一次外来擦账事件。擦掉了沈怀继续承受余损的账面连接，但没有擦掉身体已经承受余损后留下的病根。绝墨擦账，不擦伤。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-violet-300 mb-2">候（卷末触发）</h4>
+          <p>卷末大改淮假账要被大账结算成历史事实时，补痕挡不住。于是绝墨最后一次大发力，直接擦掉关键账项，使大账没有落成、没有被纠正、也没有回到真账——它悬住了。</p>
+          <p class="mt-1"><b>本质：</b>在结果即将落成时，让它暂不落。能让印未落、账未合、名未归、死未定、功未入。</p>
+          <p><b>与补痕区别：</b>补痕是有痕让痕继续长；候是有结果要落让结果暂不落。补痕是顺痕续前，候是临落悬前。</p>
+          <p class="text-gray-400 italic">三者共生：墨未干看湿，补痕续痕，候悬账。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 9. 奉玺派与大改淮 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❾</span>
+        <span class="font-bold text-gray-200">奉玺派与大改淮·派系人物</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-yellow-300 mb-2">奉玺派核心修订</h4>
+          <p>奉玺派要的不是玺本身承功。它要的是：在没有真正帝制的神州里，仍然借"皇帝名分"来承功。玺、九鼎御批、治水玺这些东西只是接口，本体是皇帝名分。</p>
+          <p class="mt-2"><b>末帝三百年前真正留下的暗示：</b>不是"某个名器能承功"，而是即便帝制不在，皇帝名分仍可承功。</p>
+          <p class="mt-2 italic text-yellow-200">「国朝虽无临御之帝，皇帝名分未绝。大水之功，不可归一臣。功入御名，诸臣奉行。玺下有位，人皆在位下。」</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-yellow-300 mb-2">五派人物定版</h4>
+          <div class="space-y-2 mt-2">
+            <p><b class="text-red-300">承功派·裴玄纪</b>（水衡司右都水使）— 真名承功</p>
+            <p><b class="text-yellow-300">奉玺派·顾廷璋</b>（尚宝司卿）— 皇帝名分承功</p>
+            <p><b class="text-green-300">分功派·沈确</b>（都察院右佥都御史）— 拆功给诸司</p>
+            <p><b class="text-purple-300">中立派·姚观澜</b>（通政司右通政）— 看哪套能活到最后</p>
+            <p><b class="text-gray-300">清册线·杜衡</b>（水衡司经历司主簿）— 清底册洗盘子</p>
+          </div>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-yellow-300 mb-2">一句话区分</h4>
+          <p>承功派要裴玄纪承；分功派要拆开承；奉玺派要让一个没有皇帝的帝国，继续用皇帝名分承功。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 10. 谢观成定水线 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">❿</span>
+        <span class="font-bold text-gray-200">谢观成·定水线上限</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-sky-300 mb-2">上限不用水量定</h4>
+          <p>上限不能用"挡多大水"来定，那样会变成战力表。上限是：<b>他能划线，但不能决定线后面的归属。</b></p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-sky-300 mb-2">能做什么/不能做什么</h4>
+          <p>能挡水势，不能消灭水灾。水会从两侧绕、前方抬高、往地下压、往别处决。他挡得越强，转移出去的水势越凶。<b>不能画闭环</b>（一旦试图闭合，线会回咬他自己）。</p>
+          <p class="mt-1">参考感觉：小渠能等人说完一句话；洪水只能等人把孩子扔过线；大灾只等一个眼神。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-sky-300 mb-2">代价</h4>
+          <p>普通使用：手指冷，皮肤有水线。重用：半边身体干半边湿，知觉分裂。灾级：身体被分成线内线外。</p>
+          <p class="mt-1"><b>最狠终局：</b>他还站着，但别人从他左边喊他右边听不见，因为那条线已经穿过他。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-sky-600">
+          <p class="italic text-sky-200">「谢观成能挡大灾的一线，不能平大灾的一局。他能让水承认一条边界，但他不能决定边界之外淹死谁。」</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 11. 超凡者死后规则 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">⓫</span>
+        <span class="font-bold text-gray-200">超凡者死后规则</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-gray-200 mb-2">常规规则</h4>
+          <p>人死后不会爆装备。尸体不会自动变法器。能力属于活着时的承接结构，死亡后大多断开。死后留下的是"痕"，不是"能"。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-gray-200 mb-2">三类残留</h4>
+          <p><b>① 病理遗痕：</b>代价在身体上留下的物理痕迹。是证据，不是装备。</p>
+          <p><b>② 经手遗痕：</b>长期使用过的物件沾上的使用痕迹。可以被墨未干、补痕读取线索，但不能稳定施展能力。</p>
+          <p><b>③ 未闭合残口：</b>最危险。死亡时账没完全闭合留下的残口。碰它的人可能得到线索，也可能被旧账卷进去。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-gray-200 mb-2">尸体超凡使用</h4>
+          <p>不存在成熟职业。极少数超凡者的能力方向可能恰好适配尸体残留——借来的只是残影，不是完整能力。使用后必然沾染死者旧代价，借得越多使用者越不像活人。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-gray-500">
+          <p class="italic text-gray-200">「人死了，能也就散了。」<br>「散不干净呢？」<br>「那叫残账。」<br>「能用？」<br>「看命。也看谁先找到那个命不好的人。」</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 12. 第十五章写作补丁 -->
+    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">⓬</span>
+        <span class="font-bold text-gray-200">第十五章写作补丁</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-pink-300 mb-2">三点修改原则</h4>
+          <p>① 删"这里不能问了"（太像作者强行转场，曹留直接做事不解释）</p>
+          <p>② 陈亦心理加乐子感（冷幽默观察，很轻藏在心理里）</p>
+          <p>③ 曹留超凡不要"压声"，改为听声/截声/定声</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-pink-300 mb-2">曹留超凡定向：听声、截声、定声</h4>
+          <p><b>听声辨真：</b>从声音里听出断续。适合查人。</p>
+          <p><b>截声：</b>削掉声音节奏，对方动作慢半拍。不是封禁，是接不上节奏。</p>
+          <p><b>回声定位：</b>不用看也能知道屋里谁听见了什么。</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-pink-300 mb-2">陈亦乐子感写法示例</h4>
+          <p class="italic text-gray-400">「陈亦很想反问一句：你看我像知道的样子吗？他忍住了。人在别人屋檐下，尤其这屋檐还归水衡司管，嘴欠是一种很快见效的死法。」</p>
+          <p class="italic text-gray-400 mt-2">「他身上现在东西够多了，沈怀的旧伤，水里的冷，胸口那点牵扯，还有一只至今装死的小陶瓶。再多一个会自己接东西的，他都想找水衡司申请加俸。」</p>
+        </div>
+        <div class="bg-gray-700/40 rounded-lg p-4">
+          <h4 class="font-bold text-pink-300 mb-2">废纸库</h4>
+          <p>地点改为废纸库（不用旧晾纸房）。试"死过、废过、断过、残过的纸"。</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- 白皮书口径 -->
+    <details class="bg-gray-800/60 rounded-xl border border-indigo-600/50 group">
+      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
+        <span class="text-indigo-400 text-lg">📋</span>
+        <span class="font-bold text-indigo-300">白皮书口径·完整版</span>
+        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+      </summary>
+      <div class="px-4 pb-4 text-sm text-gray-300">
+        <div class="bg-gray-700/40 rounded-lg p-4 leading-relaxed space-y-3">
+          <p>大账是盲目的结果主义，不认科技，只认超额结果，因此第一批科学家工程师实干者死得快。楔的本质是做假账——通过重新写进过程、解释、承接者，把真账改写成假账，假账没定稿大账就不结算；没结算就没有成果、能力和代价。如果真账已先结算，再动楔就是抢已结算结果，难度来自原承接者和既得利益链，若没人反对则没有阻力。账的代价本质是能力不属于自身的排异，地脉鸣冤者不被账影响，其余旧日力量获得者受账影响较小。</p>
+          <p>时间线上：灾后前15到20年是现代国家残骸硬顶期，不是皇朝阶段；此后九帝共约83年，末帝死于灾后100多年。这是一个持续失血四百年但没有断掉的文明。</p>
+          <p>一帝许渡这一代最朴素的目标是救世界。后来那一代人主动做出假总账，把许渡推上去。大账读到的结果形式是"大泽止步"。许渡前期没有超凡，最后三四年才长出"断"。他死得极惨——被断住的东西反过来断掉他。</p>
+          <p>末帝李承晦原本有看稳定未来和御极定域两条核心能力。一卷奏折出现后获得两时，将未来状态定到现在，触发没有欺天楔的现实篡改。来到现时后御极定域消失，残存"钉一瞬"能力。</p>
+          <p>陆执灯能力是照缝和撑缝——照出未写死的缝并短暂撑住，不能无中生有。代价是越来越只能看到裂口。</p>
+          <p>陈亦/沈怀超凡三层共生：墨未干看湿，补痕续痕，候悬账。</p>
+        </div>
+      </div>
+    </details>
+
   </div>
 </div>
-
 <!-- Tab: Notes -->
 <div id="tab-notes" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
   <div class="max-w-4xl mx-auto">
