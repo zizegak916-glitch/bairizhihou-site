@@ -64,6 +64,7 @@
     <button onclick="switchTab('relations')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="relations">🔗 关系</button>
     <button onclick="switchTab('world')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="world">🌍 世界设定</button>
     <button onclick="switchTab('timeline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="timeline">⏳ 时间线</button>
+    <button onclick="switchTab('outline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="outline">📋 大纲</button>
     <button onclick="switchTab('notes')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="notes">📝 笔记</button>
   </div>
 </nav>
@@ -157,6 +158,37 @@
   </div>
 </div>
 
+<!-- Tab: Outline -->
+<div id="tab-outline" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <!-- 故事大纲 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📖 故事大纲</h2>
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <div id="storyOutline" class="min-h-[300px] text-gray-300 focus:outline-none leading-relaxed" contenteditable="true" oninput="saveOutline()"></div>
+    </div>
+  </div>
+
+  <!-- 章节大纲 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📑 章节大纲</h2>
+    <div id="chapterOutlineList" class="space-y-2"></div>
+  </div>
+
+  <!-- 情节线索 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">🧩 情节线索</h2>
+    <div id="plotThreadsList" class="space-y-2"></div>
+    <button onclick="addPlotThread()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加线索</button>
+  </div>
+
+  <!-- 悬念/伏笔 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">❓ 悬念 / 伏笔</h2>
+    <div id="suspenseList" class="space-y-2"></div>
+    <button onclick="addSuspense()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加悬念</button>
+  </div>
+</div>
+
 <!-- Tab: Notes -->
 <div id="tab-notes" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
   <div class="max-w-4xl mx-auto">
@@ -171,10 +203,11 @@
 <div id="toastContainer"></div>
 
 <script>
-const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes' };
+const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes', outline: 'cz_outline' };
 let chaptersData = [];
 let analysisData = { characters: [], relationships: [], worldSettings: [], timeline: [] };
 let notesData = [];
+let outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
 let selectedChapter = 0;
 let chartInstance = null;
 
@@ -242,6 +275,7 @@ function renderAll() {
   renderWorldSettings();
   renderTimeline();
   renderNotes();
+  renderOutline();
   if (chaptersData.length > 0) selectChapter(0);
 }
 
@@ -647,7 +681,7 @@ function globalSearchFn(query) {
 
 // ===== IMPORT / EXPORT / RESET =====
 function exportAllJSON() {
-  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData };
+  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData, outline: outlineData };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -666,9 +700,11 @@ function importJSON(event) {
       if (data.chapters) chaptersData = data.chapters;
       if (data.analysis) analysisData = data.analysis;
       if (data.notes) notesData = data.notes;
+      if (data.outline) outlineData = data.outline;
       save(LS_KEYS.chapters, chaptersData);
       save(LS_KEYS.analysis, analysisData);
       save(LS_KEYS.notes, notesData);
+      save(LS_KEYS.outline, outlineData);
       renderAll();
       toast('导入成功');
     } catch (err) {
@@ -684,9 +720,192 @@ function resetData() {
   localStorage.removeItem(LS_KEYS.chapters);
   localStorage.removeItem(LS_KEYS.analysis);
   localStorage.removeItem(LS_KEYS.notes);
+  localStorage.removeItem(LS_KEYS.outline);
   notesData = [];
+  outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
   initData();
   toast('已重置');
+}
+
+// ===== OUTLINE =====
+function getDefaultOutline() {
+  const story = `第一幕（ch01-07）：穿越与立足
+陈亦醒来，发现沈怀的身份，在水衡司生存
+
+第二幕（ch08-14）：调查与接触
+发现下湾线索，陆执灯出场，身份危机
+
+第三幕（ch15-20）：深入与结盟
+废纸库测试，夜会导淮，银号出现
+
+第四幕（ch21-28）：危机与真相
+誊录事件，杜衡对抗，找到沈怀后手
+
+第五幕（ch29-32）：收束（用户原稿）`;
+
+  const chapterOutlines = [
+    { title: '序章', text: '沈怀死，陈亦穿越' },
+    { title: 'ch01', text: '停尸房醒来，发现穿越' },
+    { title: 'ch02', text: '初到沈怀住处' },
+    { title: 'ch03', text: '水衡司第一天，认识同僚' },
+    { title: 'ch04', text: '熟悉沈怀的日常，发现异常' },
+    { title: 'ch05', text: '处理公务，发现水衡司的秘密' },
+    { title: 'ch06', text: '与同僚建立关系，初步立足' },
+    { title: 'ch07', text: '第一幕收束，陈亦决定留下' },
+    { title: 'ch08', text: '开始调查下湾事件' },
+    { title: 'ch09', text: '发现下湾线索' },
+    { title: 'ch10', text: '陆执灯首次出场' },
+    { title: 'ch11', text: '身份危机初现' },
+    { title: 'ch12', text: '深入下湾调查' },
+    { title: 'ch13', text: '陆执灯的秘密初露端倪' },
+    { title: 'ch14', text: '第二幕收束，危机加深' },
+    { title: 'ch15', text: '废纸库测试开始' },
+    { title: 'ch16', text: '通过测试，获得信任' },
+    { title: 'ch17', text: '夜会导淮' },
+    { title: 'ch18', text: '银号首次出现' },
+    { title: 'ch19', text: '结盟深入' },
+    { title: 'ch20', text: '第三幕收束，局势明朗' },
+    { title: 'ch21', text: '誊录事件爆发' },
+    { title: 'ch22', text: '杜衡开始对抗' },
+    { title: 'ch23', text: '找到沈怀后手的线索' },
+    { title: 'ch24', text: '危机加剧' },
+    { title: 'ch25', text: '真相浮出水面' },
+    { title: 'ch26', text: '杜衡的反击' },
+    { title: 'ch27', text: '沈怀后手揭秘' },
+    { title: 'ch28', text: '第四幕收束，决战前夕' },
+    { title: 'ch29', text: '收束开始' },
+    { title: 'ch30', text: '最终对决' },
+    { title: 'ch31', text: '尘埃落定' },
+    { title: 'ch32', text: '结局' },
+  ];
+
+  const plotThreads = [
+    '主线：陈亦的生存与身份',
+    '副线1：下湾三十七项真相',
+    '副线2：陆执灯的秘密',
+    '副线3：银号的布局',
+    '暗线：沈怀的遗产',
+  ];
+
+  const suspense = [
+    '沈怀到底知道了什么？',
+    '陆执灯最终站哪边？',
+    '银号要买的是什么？',
+    '底稿去了哪里？',
+    '小陶瓶里是什么？',
+  ];
+
+  return { story, chapterOutlines, plotThreads, suspense };
+}
+
+function renderOutline() {
+  const saved = load(LS_KEYS.outline);
+  if (saved && saved.story !== undefined) {
+    outlineData = saved;
+  } else {
+    outlineData = getDefaultOutline();
+    save(LS_KEYS.outline, outlineData);
+  }
+  renderStoryOutline();
+  renderChapterOutlines();
+  renderPlotThreads();
+  renderSuspense();
+}
+
+function renderStoryOutline() {
+  document.getElementById('storyOutline').textContent = outlineData.story;
+}
+
+function renderChapterOutlines() {
+  const container = document.getElementById('chapterOutlineList');
+  container.innerHTML = outlineData.chapterOutlines.map((item, i) => `
+    <div class="bg-[#111128] rounded-lg border border-gray-800 overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#151530] transition" onclick="toggleOutlineItem(${i})">
+        <span class="text-sm font-medium text-gray-200">${item.title}</span>
+        <span class="text-xs text-gray-500 transition-transform transform" id="outline-arrow-${i}">▼</span>
+      </div>
+      <div class="px-4 pb-3 hidden" id="outline-body-${i}">
+        <div class="text-sm text-gray-400 min-h-[40px] focus:outline-none leading-relaxed" contenteditable="true" oninput="updateChapterOutline(${i}, this.textContent)">${item.text}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleOutlineItem(i) {
+  const body = document.getElementById('outline-body-' + i);
+  const arrow = document.getElementById('outline-arrow-' + i);
+  body.classList.toggle('hidden');
+  arrow.style.transform = body.classList.contains('hidden') ? '' : 'rotate(180deg)';
+}
+
+function updateChapterOutline(i, text) {
+  outlineData.chapterOutlines[i].text = text;
+  save(LS_KEYS.outline, outlineData);
+}
+
+function renderPlotThreads() {
+  const container = document.getElementById('plotThreadsList');
+  container.innerHTML = outlineData.plotThreads.map((item, i) => `
+    <div class="flex items-center gap-2 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
+      <span class="text-indigo-400 text-sm">●</span>
+      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" oninput="updatePlotThread(${i}, this.textContent)">${item}</div>
+      <button onclick="deletePlotThread(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+    </div>
+  `).join('');
+}
+
+function updatePlotThread(i, val) {
+  outlineData.plotThreads[i] = val;
+  save(LS_KEYS.outline, outlineData);
+}
+
+function addPlotThread() {
+  outlineData.plotThreads.push('新线索');
+  save(LS_KEYS.outline, outlineData);
+  renderPlotThreads();
+  toast('已添加线索');
+}
+
+function deletePlotThread(i) {
+  outlineData.plotThreads.splice(i, 1);
+  save(LS_KEYS.outline, outlineData);
+  renderPlotThreads();
+  toast('已删除');
+}
+
+function renderSuspense() {
+  const container = document.getElementById('suspenseList');
+  container.innerHTML = outlineData.suspense.map((item, i) => `
+    <div class="flex items-center gap-2 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
+      <span class="text-amber-400 text-sm">❓</span>
+      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" oninput="updateSuspense(${i}, this.textContent)">${item}</div>
+      <button onclick="deleteSuspense(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+    </div>
+  `).join('');
+}
+
+function updateSuspense(i, val) {
+  outlineData.suspense[i] = val;
+  save(LS_KEYS.outline, outlineData);
+}
+
+function addSuspense() {
+  outlineData.suspense.push('新悬念');
+  save(LS_KEYS.outline, outlineData);
+  renderSuspense();
+  toast('已添加悬念');
+}
+
+function deleteSuspense(i) {
+  outlineData.suspense.splice(i, 1);
+  save(LS_KEYS.outline, outlineData);
+  renderSuspense();
+  toast('已删除');
+}
+
+function saveOutline() {
+  outlineData.story = document.getElementById('storyOutline').textContent;
+  save(LS_KEYS.outline, outlineData);
 }
 
 // Init
