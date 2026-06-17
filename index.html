@@ -1,176 +1,261 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白日之后 - 全方位剖析</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            bg: { primary: '#0f0f0f', secondary: '#1a1a1a', card: '#1e1e1e' }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    * { scrollbar-width: thin; scrollbar-color: #444 #1a1a1a; }
-    body { background: #0f0f0f; }
-    .glow { box-shadow: 0 0 20px rgba(99, 102, 241, 0.15); }
+    * { scrollbar-width: thin; scrollbar-color: #444 #0a0a0f; }
+    body { background: #0a0a0f; color: #e5e7eb; }
+    .glow { box-shadow: 0 0 30px rgba(99, 102, 241, 0.1); }
     .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
-    .heatmap-cell { transition: background 0.2s; }
-    .heatmap-cell:hover { outline: 2px solid #fff; }
-    .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #6366f1, #8b5cf6, #a855f7); }
-    @media (max-width: 768px) { .timeline-line { left: 20px; } }
-    .fade-in { animation: fadeIn 0.6s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .stat-number { background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
     .gradient-border { border: 1px solid transparent; background-clip: padding-box; position: relative; }
     .gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; pointer-events: none; }
+    .stat-number { background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    [contenteditable]:focus { outline: 1px dashed rgba(99, 102, 241, 0.5); outline-offset: 2px; border-radius: 4px; }
+    [contenteditable]:hover { background: rgba(99, 102, 241, 0.05); }
+    .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #6366f1, #8b5cf6, #a855f7); }
   </style>
 </head>
-<body class="text-gray-200 min-h-screen">
+<body class="min-h-screen">
+
+  <!-- Top bar -->
+  <div class="fixed top-4 right-4 z-50 flex gap-2">
+    <button onclick="exportJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition">导出JSON</button>
+    <button onclick="resetData()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm rounded-lg transition">重置</button>
+  </div>
 
   <!-- Hero -->
-  <section id="hero" class="relative flex items-center justify-center min-h-[80vh] overflow-hidden">
+  <section class="relative flex items-center justify-center min-h-[80vh] overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/10 to-black"></div>
     <div class="absolute top-20 left-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl"></div>
     <div class="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-    <div class="relative z-10 text-center px-6 fade-in">
-      <h1 class="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">白日之后</h1>
-      <p class="text-xl md:text-2xl text-gray-400 mb-10 tracking-widest">全方位剖析</p>
-      <div class="flex flex-wrap justify-center gap-8" id="stats-bar">
-        <div class="text-center"><div class="stat-number text-4xl font-bold" id="stat-chars">-</div><div class="text-gray-500 text-sm mt-1">总字数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" id="stat-chapters">-</div><div class="text-gray-500 text-sm mt-1">章节数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" id="stat-characters">-</div><div class="text-gray-500 text-sm mt-1">人物数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" id="stat-world">-</div><div class="text-gray-500 text-sm mt-1">世界设定</div></div>
+    <div class="relative z-10 text-center px-6">
+      <h1 class="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" contenteditable="true" data-field="title">白日之后</h1>
+      <p class="text-xl md:text-2xl text-gray-400 mb-10 tracking-widest" contenteditable="true" data-field="subtitle">全方位剖析</p>
+      <div class="flex flex-wrap justify-center gap-8">
+        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat1">83528字</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat1Label">总字数</div></div>
+        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat2">34章</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat2Label">章节数</div></div>
+        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat3">8角色</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat3Label">人物数</div></div>
+        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat4">7世界设定</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat4Label">世界设定</div></div>
       </div>
     </div>
   </section>
 
   <!-- 人物卡片 -->
-  <section class="max-w-7xl mx-auto px-6 py-20" id="section-characters">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">人物图鉴</h2>
+  <section class="max-w-7xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">人物图鉴</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="character-grid"></div>
   </section>
 
-  <!-- 字数统计图 -->
-  <section class="max-w-7xl mx-auto px-6 py-20" id="section-words">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">章节字数统计</h2>
-    <div class="bg-bg-card rounded-2xl p-6 gradient-border">
+  <!-- 字数统计 -->
+  <section class="max-w-7xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">章节字数统计</h2>
+    <div class="bg-[#111] rounded-2xl p-6 gradient-border">
       <canvas id="wordChart" height="300"></canvas>
     </div>
   </section>
 
-  <!-- 关系图 -->
-  <section class="max-w-7xl mx-auto px-6 py-20" id="section-relations">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">人物关系</h2>
-    <div class="bg-bg-card rounded-2xl p-6 gradient-border relative" style="height: 500px;">
-      <canvas id="relationCanvas"></canvas>
+  <!-- 关系网络 -->
+  <section class="max-w-7xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">人物关系</h2>
+    <div class="bg-[#111] rounded-2xl p-6 gradient-border relative" style="height: 500px;">
+      <svg id="relationSvg" width="100%" height="100%"></svg>
     </div>
   </section>
 
-  <!-- 热力图 -->
-  <section class="max-w-7xl mx-auto px-6 py-20" id="section-heatmap">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">人物出场热力图</h2>
-    <div class="bg-bg-card rounded-2xl p-6 gradient-border overflow-x-auto">
-      <div id="heatmap-container"></div>
-    </div>
-  </section>
-
-  <!-- 时间线 -->
-  <section class="max-w-5xl mx-auto px-6 py-20" id="section-timeline">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">关键情节时间线</h2>
+  <!-- 情节时间线 -->
+  <section class="max-w-5xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">关键情节时间线</h2>
     <div class="relative" id="timeline-container"></div>
   </section>
 
   <!-- 世界设定 -->
-  <section class="max-w-7xl mx-auto px-6 py-20" id="section-world">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">世界设定</h2>
+  <section class="max-w-7xl mx-auto px-6 py-20">
+    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">世界设定</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="world-grid"></div>
   </section>
 
-  <!-- Footer -->
   <footer class="text-center py-10 text-gray-600 text-sm border-t border-gray-800">白日之后 - 数据分析</footer>
 
 <script>
-let DATA = null;
+const LS_KEY = 'bairizhihou_data';
 
-const TYPE_COLORS = {
-  turning: '#f59e0b',
-  discovery: '#3b82f6',
-  character: '#10b981',
-  crisis: '#ef4444'
+const DEFAULT_DATA = {
+  characters: [
+    { name: "陈亦", role: "穿越者", desc: "从现代穿越到沈怀身体，拥有墨未干和补痕能力。怕死、嘴毒、怕麻烦，但聪明。", color: "#e74c3c" },
+    { name: "陆执灯", role: "关键人物", desc: "唯一知道陈亦不是沈怀的人。沈怀知识的唯一通道。亦敌亦友。", color: "#3498db" },
+    { name: "曹留", role: "上司", desc: "录房主事，冷面热心。能截声。保护陈亦但不说明。", color: "#2ecc71" },
+    { name: "谢观成", role: "中间人", desc: "前中枢经历，曾为银号做事，现在站下湾。", color: "#f39c12" },
+    { name: "罗小满", role: "导淮少年", desc: "导淮传信人，腿快嘴快。", color: "#1abc9c" },
+    { name: "老孟", role: "导淮老人", desc: "下湾老人，三十七项幸存者。", color: "#e67e22" },
+    { name: "杜衡", role: "高层", desc: "水衡司主簿，眼神薄，看人不急。", color: "#c0392b" },
+    { name: "沈怀", role: "前身", desc: "水衡司录房小吏，查下湾三十七项被杀。", color: "#9b59b6" }
+  ],
+  relationships: [
+    { from: "陈亦", to: "陆执灯", label: "交易/亦敌亦友", strength: 4 },
+    { from: "陈亦", to: "曹留", label: "保护", strength: 5 },
+    { from: "陈亦", to: "谢观成", label: "合作", strength: 3 },
+    { from: "陈亦", to: "罗小满", label: "盟友", strength: 3 },
+    { from: "陈亦", to: "杜衡", label: "对抗", strength: 3 },
+    { from: "陆执灯", to: "沈怀", label: "旧识", strength: 4 },
+    { from: "曹留", to: "杜衡", label: "对抗", strength: 3 },
+    { from: "谢观成", to: "老孟", label: "导淮同伙", strength: 4 },
+    { from: "罗小满", to: "老孟", label: "导淮同伙", strength: 5 },
+    { from: "谢观成", to: "陆执灯", label: "互相知道", strength: 2 }
+  ],
+  chapters: [
+    { name: "序章", chars: 1656 },
+    { name: "今日未平", chars: 4208 },
+    { name: "归录", chars: 3156 },
+    { name: "补录", chars: 2178 },
+    { name: "旧鞋", chars: 1324 },
+    { name: "夜诊", chars: 1501 },
+    { name: "上值", chars: 1899 },
+    { name: "工牌", chars: 783 },
+    { name: "陆本", chars: 1002 },
+    { name: "补痕", chars: 1417 },
+    { name: "下湾", chars: 1028 },
+    { name: "旧堤", chars: 922 },
+    { name: "账链", chars: 782 },
+    { name: "夜查", chars: 1754 },
+    { name: "候验", chars: 2029 },
+    { name: "刀", chars: 2212 },
+    { name: "归座", chars: 2520 },
+    { name: "废纸库", chars: 2459 },
+    { name: "补痕", chars: 2756 },
+    { name: "旧录", chars: 4041 },
+    { name: "夜会", chars: 4211 },
+    { name: "账签", chars: 4147 },
+    { name: "照并", chars: 1823 },
+    { name: "落笔", chars: 2191 },
+    { name: "封账", chars: 3112 },
+    { name: "定水", chars: 3140 },
+    { name: "划线", chars: 2843 },
+    { name: "未收", chars: 2519 },
+    { name: "第一眼", chars: 2632 },
+    { name: "勿拆", chars: 2759 },
+    { name: "夜查", chars: 3424 },
+    { name: "半截骨头", chars: 4511 },
+    { name: "候验席", chars: 3246 },
+    { name: "旧死了", chars: 3343 }
+  ],
+  timeline: [
+    { ch: "ch0", event: "沈怀死陈亦醒来", type: "转折" },
+    { ch: "ch1", event: "停尸房穿越", type: "发现" },
+    { ch: "ch5", event: "陆执灯出场", type: "人物" },
+    { ch: "ch14", event: "你到底是谁", type: "转折" },
+    { ch: "ch14.5", event: "陆执灯交易", type: "转折" },
+    { ch: "ch16", event: "废纸库补痕", type: "发现" },
+    { ch: "ch19", event: "夜会导淮", type: "转折" },
+    { ch: "ch20", event: "银号出场", type: "人物" },
+    { ch: "ch21", event: "誊录第三栏", type: "危机" },
+    { ch: "ch23", event: "照并封案", type: "危机" },
+    { ch: "ch24", event: "杜衡问底稿", type: "危机" },
+    { ch: "ch27", event: "余损三十七项", type: "发现" },
+    { ch: "ch28", event: "沈怀后手", type: "发现" }
+  ],
+  worldSettings: [
+    { name: "水衡司", type: "机构", desc: "管水的衙门" },
+    { name: "录房", type: "部门", desc: "誊录核账封册" },
+    { name: "中枢", type: "上级", desc: "朝廷控制地方" },
+    { name: "背债银号", type: "灰色势力", desc: "买卖情报判断" },
+    { name: "导淮", type: "地下组织", desc: "下湾幸存者" },
+    { name: "下湾", type: "地点", desc: "旧堤旧工区" },
+    { name: "废纸库", type: "地点", desc: "录房后面旧屋" }
+  ]
 };
 
-const TYPE_LABELS = {
-  turning: '转折',
-  discovery: '发现',
-  character: '人物',
-  crisis: '危机'
-};
-
-async function loadData() {
-  const res = await fetch('data/content.json');
-  DATA = await res.json();
-  render();
+function loadData() {
+  const saved = localStorage.getItem(LS_KEY);
+  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
-function render() {
-  renderStats();
-  renderCharacters();
-  renderWordChart();
-  renderRelationGraph();
-  renderHeatmap();
-  renderTimeline();
-  renderWorldSettings();
+function saveData() {
+  const data = {
+    characters: [],
+    relationships: [],
+    chapters: [],
+    timeline: [],
+    worldSettings: []
+  };
+  document.querySelectorAll('.char-card').forEach(card => {
+    data.characters.push({
+      name: card.querySelector('.char-name')?.textContent.trim() || "",
+      role: card.querySelector('.char-role')?.textContent.trim() || "",
+      desc: card.querySelector('.char-desc')?.textContent.trim() || "",
+      color: card.dataset.color || "#666"
+    });
+  });
+  document.querySelectorAll('.rel-row').forEach(row => {
+    data.relationships.push({
+      from: row.querySelector('.rel-from')?.textContent.trim() || "",
+      to: row.querySelector('.rel-to')?.textContent.trim() || "",
+      label: row.querySelector('.rel-label')?.textContent.trim() || "",
+      strength: parseInt(row.querySelector('.rel-strength')?.textContent.trim()) || 3
+    });
+  });
+  document.querySelectorAll('.ch-item').forEach(item => {
+    data.chapters.push({
+      name: item.querySelector('.ch-name')?.textContent.trim() || "",
+      chars: parseInt(item.querySelector('.ch-chars')?.textContent.trim()) || 0
+    });
+  });
+  document.querySelectorAll('.tl-item').forEach(item => {
+    data.timeline.push({
+      ch: item.querySelector('.tl-ch')?.textContent.trim() || "",
+      event: item.querySelector('.tl-event')?.textContent.trim() || "",
+      type: item.querySelector('.tl-type')?.textContent.trim() || ""
+    });
+  });
+  document.querySelectorAll('.ws-card').forEach(card => {
+    data.worldSettings.push({
+      name: card.querySelector('.ws-name')?.textContent.trim() || "",
+      type: card.querySelector('.ws-type')?.textContent.trim() || "",
+      desc: card.querySelector('.ws-desc')?.textContent.trim() || ""
+    });
+  });
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
 }
 
-function renderStats() {
-  document.getElementById('stat-chars').textContent = DATA.stats.totalChars.toLocaleString();
-  document.getElementById('stat-chapters').textContent = DATA.stats.totalChapters;
-  document.getElementById('stat-characters').textContent = DATA.stats.totalCharacters;
-  document.getElementById('stat-world').textContent = DATA.stats.totalWorldSettings;
+function resetData() {
+  localStorage.removeItem(LS_KEY);
+  location.reload();
 }
 
-function renderCharacters() {
+function exportJSON() {
+  const data = loadData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bairizhihou_data.json';
+  a.click();
+}
+
+function renderCharacters(data) {
   const grid = document.getElementById('character-grid');
-  grid.innerHTML = DATA.characters.map(c => {
-    const chCount = c.chapters.length;
-    const avgChars = Math.round(chCount * DATA.stats.totalChars / DATA.stats.totalChapters);
-    return `
-      <div class="bg-bg-card rounded-xl p-5 gradient-border card-hover cursor-default" style="--accent: ${c.color}">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background: ${c.color}">${c.name[0]}</div>
-          <div>
-            <div class="font-bold text-white">${c.name}</div>
-            <div class="text-xs text-gray-500">${c.role}</div>
-          </div>
-        </div>
-        <p class="text-gray-400 text-sm mb-3 leading-relaxed">${c.desc}</p>
-        <div class="flex items-center gap-2 text-xs text-gray-600">
-          <span>出场 <span class="text-gray-300 font-medium">${chCount}</span> 章</span>
-          <span>·</span>
-          <span>约 <span class="text-gray-300 font-medium">${avgChars.toLocaleString()}</span> 字</span>
-        </div>
-        <div class="flex flex-wrap gap-1 mt-3">
-          ${c.chapters.map(ch => `<span class="w-5 h-5 rounded text-[10px] flex items-center justify-center" style="background: ${c.color}22; color: ${c.color}">${ch}</span>`).join('')}
+  grid.innerHTML = data.characters.map(c => `
+    <div class="bg-[#111] rounded-xl p-5 gradient-border card-hover char-card" data-color="${c.color}">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background:${c.color}">${c.name[0]}</div>
+        <div>
+          <div class="font-bold text-white char-name" contenteditable="true">${c.name}</div>
+          <div class="text-xs text-gray-500 char-role" contenteditable="true">${c.role}</div>
         </div>
       </div>
-    `;
-  }).join('');
+      <p class="text-gray-400 text-sm leading-relaxed char-desc" contenteditable="true">${c.desc}</p>
+    </div>
+  `).join('');
 }
 
-function renderWordChart() {
+function renderChart(data) {
   const ctx = document.getElementById('wordChart').getContext('2d');
-  const labels = DATA.chapters.map((ch, i) => `第${i}章 ${ch.name}`);
-  const values = DATA.chapters.map(ch => ch.chars);
+  const labels = data.chapters.map(ch => ch.name);
+  const values = data.chapters.map(ch => ch.chars);
+  const max = Math.max(...values);
 
   new Chart(ctx, {
     type: 'bar',
@@ -179,31 +264,16 @@ function renderWordChart() {
       datasets: [{
         label: '字数',
         data: values,
-        backgroundColor: values.map((v, i) => {
-          const max = Math.max(...values);
-          const ratio = v / max;
-          return `rgba(99, 102, 241, ${0.3 + ratio * 0.7})`;
-        }),
-        borderColor: 'rgba(99, 102, 241, 0.8)',
+        backgroundColor: values.map(v => `rgba(99,102,241,${0.3 + (v/max)*0.7})`),
+        borderColor: 'rgba(99,102,241,0.8)',
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 4
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: (items) => {
-              const idx = items[0].dataIndex;
-              return `第${idx}章 ${DATA.chapters[idx].name}`;
-            },
-            label: (item) => `${item.raw.toLocaleString()} 字`
-          }
-        }
-      },
+      plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: '#666', maxRotation: 45 }, grid: { color: '#222' } },
         y: { ticks: { color: '#666' }, grid: { color: '#222' } }
@@ -212,155 +282,123 @@ function renderWordChart() {
   });
 }
 
-function renderRelationGraph() {
-  const canvas = document.getElementById('relationCanvas');
-  const container = canvas.parentElement;
-  const W = container.clientWidth;
-  const H = container.clientHeight;
-  canvas.width = W * 2;
-  canvas.height = H * 2;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(2, 2);
-
-  const chars = DATA.characters;
+function renderRelations(data) {
+  const svg = document.getElementById('relationSvg');
+  const rect = svg.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
   const cx = W / 2, cy = H / 2;
   const radius = Math.min(W, H) * 0.35;
 
   const positions = {};
-  chars.forEach((c, i) => {
-    const angle = (i / chars.length) * Math.PI * 2 - Math.PI / 2;
+  data.characters.forEach((c, i) => {
+    const angle = (i / data.characters.length) * Math.PI * 2 - Math.PI / 2;
     positions[c.name] = { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, color: c.color };
   });
 
-  DATA.relationships.forEach(r => {
-    const a = positions[r.from];
-    const b = positions[r.to];
+  let svgContent = '';
+  data.relationships.forEach(r => {
+    const a = positions[r.from], b = positions[r.to];
     if (!a || !b) return;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.strokeStyle = `rgba(255,255,255,${0.05 + r.strength * 0.08})`;
-    ctx.lineWidth = 0.5 + r.strength * 0.5;
-    ctx.stroke();
-
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2;
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(r.label, mx, my - 4);
+    const opacity = 0.15 + r.strength * 0.1;
+    const width = 0.5 + r.strength * 0.4;
+    svgContent += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="rgba(255,255,255,${opacity})" stroke-width="${width}"/>`;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    svgContent += `<text x="${mx}" y="${my - 6}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">${r.label}</text>`;
   });
 
-  chars.forEach(c => {
+  data.characters.forEach(c => {
     const p = positions[c.name];
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 22, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(c.name, p.x, p.y);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '10px sans-serif';
-    ctx.textBaseline = 'top';
-    ctx.fillText(c.role, p.x, p.y + 28);
-  });
-}
-
-function renderHeatmap() {
-  const container = document.getElementById('heatmap-container');
-  const chars = DATA.characters;
-  const numChapters = DATA.chapters.length;
-
-  let html = '<div class="min-w-[700px]">';
-  html += '<div class="flex mb-2 pl-32">';
-  for (let i = 0; i < numChapters; i++) {
-    html += `<div class="w-8 text-center text-[10px] text-gray-500 flex-shrink-0">${i}</div>`;
-  }
-  html += '</div>';
-
-  chars.forEach(c => {
-    const chSet = new Set(c.chapters);
-    html += `<div class="flex items-center mb-1">`;
-    html += `<div class="w-32 text-right pr-3 text-sm text-gray-400 flex-shrink-0 truncate">${c.name}</div>`;
-    for (let i = 0; i < numChapters; i++) {
-      const has = chSet.has(i);
-      const bg = has ? c.color + 'cc' : '#1a1a1a';
-      html += `<div class="w-8 h-6 heatmap-cell rounded-sm flex-shrink-0" style="background:${bg}" title="${c.name} - 第${i}章 ${DATA.chapters[i].name}"></div>`;
-    }
-    html += '</div>';
+    svgContent += `<circle cx="${p.x}" cy="${p.y}" r="24" fill="${p.color}" stroke="rgba(0,0,0,0.3)" stroke-width="2"/>`;
+    svgContent += `<text x="${p.x}" y="${p.y + 1}" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="12" font-weight="bold">${c.name}</text>`;
+    svgContent += `<text x="${p.x}" y="${p.y + 36}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">${c.role}</text>`;
   });
 
-  html += '<div class="flex mt-3 pl-32 items-center gap-2 text-xs text-gray-500">';
-  html += '<span>图例：</span>';
-  html += '<div class="w-4 h-4 rounded" style="background:#1a1a1a;border:1px solid #333"></div><span>未出场</span>';
-  html += '<div class="w-4 h-4 rounded" style="background:#6366f1cc"></div><span>出场</span>';
-  html += '</div>';
-  html += '</div>';
-  container.innerHTML = html;
+  svg.innerHTML = svgContent;
 }
 
-function renderTimeline() {
-  const container = document.getElementById('timeline-container');
-  container.innerHTML = '<div class="timeline-line"></div>';
-
-  DATA.plotPoints.forEach((p, i) => {
-    const isLeft = i % 2 === 0;
-    const color = TYPE_COLORS[p.type] || '#6366f1';
-    const typeLabel = TYPE_LABELS[p.type] || p.type;
-
-    const item = document.createElement('div');
-    item.className = `relative flex items-center mb-8 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`;
-    item.innerHTML = `
-      <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 z-10" style="background:${color};border-color:${color}"></div>
-      <div class="w-[calc(50%-2rem)] ${isLeft ? 'pr-8 text-right' : 'pl-8 text-left'}">
-        <div class="bg-bg-card rounded-xl p-4 gradient-border card-hover">
-          <div class="flex items-center gap-2 mb-1 ${isLeft ? 'justify-end' : ''}">
-            <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${color}22;color:${color}">${typeLabel}</span>
-            <span class="text-xs text-gray-500">第${p.ch}章</span>
-          </div>
-          <p class="text-gray-300 text-sm">${p.event}</p>
-        </div>
-      </div>
-      <div class="w-[calc(50%-2rem)]"></div>
-    `;
-    container.appendChild(item);
-  });
-}
-
-function renderWorldSettings() {
-  const grid = document.getElementById('world-grid');
-  const icons = { '机构': '🏛️', '部门': '📋', '上级': '👔', '灰色势力': '🌙', '地下组织': '⚔️', '地点': '📍' };
-  const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#3b82f6', '#06b6d4'];
-
-  grid.innerHTML = DATA.worldSettings.map((w, i) => `
-    <div class="bg-bg-card rounded-xl p-5 gradient-border card-hover" style="border-top: 3px solid ${colors[i % colors.length]}">
-      <div class="flex items-center gap-3 mb-3">
-        <span class="text-2xl">${icons[w.type] || '📄'}</span>
-        <div>
-          <div class="font-bold text-white text-lg">${w.name}</div>
-          <div class="text-xs px-2 py-0.5 rounded-full inline-block" style="background:${colors[i % colors.length]}22;color:${colors[i % colors.length]}">${w.type}</div>
-        </div>
-      </div>
-      <p class="text-gray-400 text-sm leading-relaxed">${w.desc}</p>
+function renderRelationshipsTable(data) {
+  const grid = document.getElementById('rel-table');
+  if (!grid) return;
+  grid.innerHTML = data.relationships.map(r => `
+    <div class="flex items-center gap-2 bg-[#111] rounded-lg px-4 py-2 gradient-border rel-row">
+      <span class="text-white font-medium flex-1 rel-from" contenteditable="true">${r.from}</span>
+      <span class="text-gray-500">→</span>
+      <span class="text-white font-medium flex-1 rel-to" contenteditable="true">${r.to}</span>
+      <span class="text-gray-400 text-sm flex-1 rel-label" contenteditable="true">${r.label}</span>
+      <span class="text-indigo-400 font-bold w-8 text-center rel-strength" contenteditable="true">${r.strength}</span>
     </div>
   `).join('');
 }
 
-window.addEventListener('resize', () => {
-  if (DATA) renderRelationGraph();
+function renderTimeline(data) {
+  const container = document.getElementById('timeline-container');
+  const TYPE_MAP = { "转折": "#f59e0b", "发现": "#3b82f6", "人物": "#10b981", "危机": "#ef4444" };
+  let html = '<div class="timeline-line"></div>';
+  data.timeline.forEach((item, i) => {
+    const isLeft = i % 2 === 0;
+    const color = TYPE_MAP[item.type] || '#6366f1';
+    html += `
+      <div class="relative flex items-center mb-8 ${isLeft ? 'flex-row' : 'flex-row-reverse'} tl-item">
+        <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 z-10" style="background:${color};border-color:${color}"></div>
+        <div class="w-[calc(50%-2rem)] ${isLeft ? 'pr-8 text-right' : 'pl-8 text-left'}">
+          <div class="bg-[#111] rounded-xl p-4 gradient-border card-hover">
+            <div class="flex items-center gap-2 mb-1 ${isLeft ? 'justify-end' : ''}">
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium tl-type" style="background:${color}22;color:${color}" contenteditable="true">${item.type}</span>
+              <span class="text-xs text-gray-500 tl-ch" contenteditable="true">${item.ch}</span>
+            </div>
+            <p class="text-gray-300 text-sm tl-event" contenteditable="true">${item.event}</p>
+          </div>
+        </div>
+        <div class="w-[calc(50%-2rem)]"></div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderWorldSettings(data) {
+  const grid = document.getElementById('world-grid');
+  const icons = { '机构': '🏛️', '部门': '📋', '上级': '👔', '灰色势力': '🌙', '地下组织': '⚔️', '地点': '📍' };
+  const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#3b82f6', '#06b6d4'];
+  grid.innerHTML = data.worldSettings.map((w, i) => `
+    <div class="bg-[#111] rounded-xl p-5 gradient-border card-hover ws-card" style="border-top: 3px solid ${colors[i % colors.length]}">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-2xl">${icons[w.type] || '📄'}</span>
+        <div>
+          <div class="font-bold text-white text-lg ws-name" contenteditable="true">${w.name}</div>
+          <div class="text-xs px-2 py-0.5 rounded-full inline-block ws-type" style="background:${colors[i % colors.length]}22;color:${colors[i % colors.length]}" contenteditable="true">${w.type}</div>
+        </div>
+      </div>
+      <p class="text-gray-400 text-sm leading-relaxed ws-desc" contenteditable="true">${w.desc}</p>
+    </div>
+  `).join('');
+}
+
+function renderAll() {
+  const data = loadData();
+  renderCharacters(data);
+  renderChart(data);
+  renderRelations(data);
+  renderTimeline(data);
+  renderWorldSettings(data);
+}
+
+document.addEventListener('blur', e => {
+  if (e.target.hasAttribute('contenteditable')) saveData();
+}, true);
+
+document.addEventListener('input', e => {
+  if (e.target.hasAttribute('contenteditable')) {
+    clearTimeout(e.target._debounce);
+    e.target._debounce = setTimeout(saveData, 500);
+  }
 });
 
-loadData();
+window.addEventListener('resize', () => {
+  const data = loadData();
+  renderRelations(data);
+});
+
+renderAll();
 </script>
 
 </body>
