@@ -3,403 +3,694 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白日之后 - 全方位剖析</title>
+  <title>白日之后 - 创作控制台</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
-    * { scrollbar-width: thin; scrollbar-color: #444 #0a0a0f; }
-    body { background: #0a0a0f; color: #e5e7eb; }
-    .glow { box-shadow: 0 0 30px rgba(99, 102, 241, 0.1); }
+    * { scrollbar-width: thin; scrollbar-color: #333 #0a0a0f; }
+    body { background: #0a0a0f; color: #e5e7eb; font-family: system-ui, -apple-system, sans-serif; }
+    .tab-active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
+    .tab-inactive { background: #1a1a2e; color: #9ca3af; }
+    .tab-inactive:hover { background: #252540; color: #e5e7eb; }
+    [contenteditable]:focus { outline: 1px dashed rgba(99,102,241,0.6); outline-offset: 2px; border-radius: 4px; }
+    [contenteditable]:hover { background: rgba(99,102,241,0.05); }
+    .chapter-item { transition: all 0.15s; cursor: pointer; }
+    .chapter-item:hover { background: rgba(99,102,241,0.1); }
+    .chapter-item.active { background: rgba(99,102,241,0.2); border-left: 3px solid #818cf8; }
     .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-    .gradient-border { border: 1px solid transparent; background-clip: padding-box; position: relative; }
-    .gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; pointer-events: none; }
-    .stat-number { background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    [contenteditable]:focus { outline: 1px dashed rgba(99, 102, 241, 0.5); outline-offset: 2px; border-radius: 4px; }
-    [contenteditable]:hover { background: rgba(99, 102, 241, 0.05); }
-    .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #6366f1, #8b5cf6, #a855f7); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+    .stat-card { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); border: 1px solid rgba(99,102,241,0.2); }
+    .stat-num { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .search-highlight { background: rgba(250,204,21,0.3); border-radius: 2px; padding: 0 2px; }
+    .heatmap-cell { width: 28px; height: 28px; border-radius: 4px; transition: all 0.15s; }
+    .heatmap-cell:hover { transform: scale(1.3); z-index: 10; }
+    .timeline-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #818cf8; background: #0a0a0f; position: relative; z-index: 2; }
+    .timeline-line { position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #6366f1, #8b5cf6); z-index: 1; }
+    .relationship-line { stroke: #6366f1; stroke-width: 2; fill: none; opacity: 0.6; }
+    .relationship-node { cursor: pointer; transition: r 0.2s; }
+    .relationship-node:hover { r: 28; }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-danger { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .btn-danger:hover { background: rgba(239,68,68,0.4); }
+    #chapterContent { line-height: 1.8; font-size: 16px; white-space: pre-wrap; word-wrap: break-word; }
+    .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 9999; animation: fadeInUp 0.3s ease; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .empty-state { border: 2px dashed rgba(99,102,241,0.3); border-radius: 12px; padding: 40px; text-align: center; color: #6b7280; }
   </style>
 </head>
 <body class="min-h-screen">
 
-  <!-- Top bar -->
-  <div class="fixed top-4 right-4 z-50 flex gap-2">
-    <button onclick="exportJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition">导出JSON</button>
-    <button onclick="resetData()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-sm rounded-lg transition">重置</button>
+<!-- Top Navigation -->
+<nav class="sticky top-0 z-50 bg-[#0d0d1a]/95 backdrop-blur border-b border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">白日之后 · 创作控制台</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <input id="globalSearch" type="text" placeholder="搜索全文..." class="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm w-48 focus:outline-none focus:border-indigo-500" oninput="globalSearchFn(this.value)">
+      <button onclick="resetData()" class="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-300 text-sm rounded-lg transition border border-red-600/30">重置</button>
+      <button onclick="exportAllJSON()" class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">导出JSON</button>
+      <label class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-sm rounded-lg transition border border-purple-600/30 cursor-pointer">
+        导入JSON
+        <input type="file" accept=".json" onchange="importJSON(event)" class="hidden">
+      </label>
+    </div>
   </div>
+  <div class="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto">
+    <button onclick="switchTab('overview')" class="tab-btn tab-active px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="overview">📊 概览</button>
+    <button onclick="switchTab('chapters')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="chapters">📖 正文</button>
+    <button onclick="switchTab('characters')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="characters">👤 人物</button>
+    <button onclick="switchTab('relations')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="relations">🔗 关系</button>
+    <button onclick="switchTab('world')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="world">🌍 世界设定</button>
+    <button onclick="switchTab('timeline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="timeline">⏳ 时间线</button>
+    <button onclick="switchTab('notes')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="notes">📝 笔记</button>
+  </div>
+</nav>
 
-  <!-- Hero -->
-  <section class="relative flex items-center justify-center min-h-[80vh] overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-indigo-900/20 via-purple-900/10 to-black"></div>
-    <div class="absolute top-20 left-20 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-    <div class="relative z-10 text-center px-6">
-      <h1 class="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" contenteditable="true" data-field="title">白日之后</h1>
-      <p class="text-xl md:text-2xl text-gray-400 mb-10 tracking-widest" contenteditable="true" data-field="subtitle">全方位剖析</p>
-      <div class="flex flex-wrap justify-center gap-8">
-        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat1">83528字</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat1Label">总字数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat2">34章</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat2Label">章节数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat3">8角色</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat3Label">人物数</div></div>
-        <div class="text-center"><div class="stat-number text-4xl font-bold" contenteditable="true" data-field="stat4">7世界设定</div><div class="text-gray-500 text-sm mt-1" contenteditable="true" data-field="stat4Label">世界设定</div></div>
+<!-- Tab: Overview -->
+<div id="tab-overview" class="tab-content max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" id="statsCards"></div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <h3 class="text-lg font-bold mb-4 text-gray-200">各章字数</h3>
+      <canvas id="chartChapters" height="200"></canvas>
+    </div>
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <h3 class="text-lg font-bold mb-4 text-gray-200">角色出场热力图</h3>
+      <div class="overflow-x-auto" id="heatmapContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Chapters -->
+<div id="tab-chapters" class="tab-content hidden max-w-7xl mx-auto px-4 py-6">
+  <div class="flex h-[calc(100vh-140px)]">
+    <!-- Left sidebar -->
+    <div class="w-80 flex-shrink-0 bg-[#111128] rounded-l-xl border border-gray-800 flex flex-col">
+      <div class="p-3 border-b border-gray-800">
+        <input id="chapterSearch" type="text" placeholder="搜索章节..." class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500" oninput="filterChapters(this.value)">
+      </div>
+      <div class="flex-1 overflow-y-auto" id="chapterList"></div>
+      <div class="p-3 border-t border-gray-800">
+        <button onclick="addChapter()" class="w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加新章节</button>
       </div>
     </div>
-  </section>
-
-  <!-- 人物卡片 -->
-  <section class="max-w-7xl mx-auto px-6 py-20">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">人物图鉴</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="character-grid"></div>
-  </section>
-
-  <!-- 字数统计 -->
-  <section class="max-w-7xl mx-auto px-6 py-20">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">章节字数统计</h2>
-    <div class="bg-[#111] rounded-2xl p-6 gradient-border">
-      <canvas id="wordChart" height="300"></canvas>
-    </div>
-  </section>
-
-  <!-- 关系网络 -->
-  <section class="max-w-7xl mx-auto px-6 py-20">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">人物关系</h2>
-    <div class="bg-[#111] rounded-2xl p-6 gradient-border relative" style="height: 500px;">
-      <svg id="relationSvg" width="100%" height="100%"></svg>
-    </div>
-  </section>
-
-  <!-- 情节时间线 -->
-  <section class="max-w-5xl mx-auto px-6 py-20">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">关键情节时间线</h2>
-    <div class="relative" id="timeline-container"></div>
-  </section>
-
-  <!-- 世界设定 -->
-  <section class="max-w-7xl mx-auto px-6 py-20">
-    <h2 class="text-3xl font-bold mb-10 text-center bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" contenteditable="true">世界设定</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="world-grid"></div>
-  </section>
-
-  <footer class="text-center py-10 text-gray-600 text-sm border-t border-gray-800">白日之后 - 数据分析</footer>
-
-<script>
-const LS_KEY = 'bairizhihou_data';
-
-const DEFAULT_DATA = {
-  characters: [
-    { name: "陈亦", role: "穿越者", desc: "从现代穿越到沈怀身体，拥有墨未干和补痕能力。怕死、嘴毒、怕麻烦，但聪明。", color: "#e74c3c" },
-    { name: "陆执灯", role: "关键人物", desc: "唯一知道陈亦不是沈怀的人。沈怀知识的唯一通道。亦敌亦友。", color: "#3498db" },
-    { name: "曹留", role: "上司", desc: "录房主事，冷面热心。能截声。保护陈亦但不说明。", color: "#2ecc71" },
-    { name: "谢观成", role: "中间人", desc: "前中枢经历，曾为银号做事，现在站下湾。", color: "#f39c12" },
-    { name: "罗小满", role: "导淮少年", desc: "导淮传信人，腿快嘴快。", color: "#1abc9c" },
-    { name: "老孟", role: "导淮老人", desc: "下湾老人，三十七项幸存者。", color: "#e67e22" },
-    { name: "杜衡", role: "高层", desc: "水衡司主簿，眼神薄，看人不急。", color: "#c0392b" },
-    { name: "沈怀", role: "前身", desc: "水衡司录房小吏，查下湾三十七项被杀。", color: "#9b59b6" }
-  ],
-  relationships: [
-    { from: "陈亦", to: "陆执灯", label: "交易/亦敌亦友", strength: 4 },
-    { from: "陈亦", to: "曹留", label: "保护", strength: 5 },
-    { from: "陈亦", to: "谢观成", label: "合作", strength: 3 },
-    { from: "陈亦", to: "罗小满", label: "盟友", strength: 3 },
-    { from: "陈亦", to: "杜衡", label: "对抗", strength: 3 },
-    { from: "陆执灯", to: "沈怀", label: "旧识", strength: 4 },
-    { from: "曹留", to: "杜衡", label: "对抗", strength: 3 },
-    { from: "谢观成", to: "老孟", label: "导淮同伙", strength: 4 },
-    { from: "罗小满", to: "老孟", label: "导淮同伙", strength: 5 },
-    { from: "谢观成", to: "陆执灯", label: "互相知道", strength: 2 }
-  ],
-  chapters: [
-    { name: "序章", chars: 1656 },
-    { name: "今日未平", chars: 4208 },
-    { name: "归录", chars: 3156 },
-    { name: "补录", chars: 2178 },
-    { name: "旧鞋", chars: 1324 },
-    { name: "夜诊", chars: 1501 },
-    { name: "上值", chars: 1899 },
-    { name: "工牌", chars: 783 },
-    { name: "陆本", chars: 1002 },
-    { name: "补痕", chars: 1417 },
-    { name: "下湾", chars: 1028 },
-    { name: "旧堤", chars: 922 },
-    { name: "账链", chars: 782 },
-    { name: "夜查", chars: 1754 },
-    { name: "候验", chars: 2029 },
-    { name: "刀", chars: 2212 },
-    { name: "归座", chars: 2520 },
-    { name: "废纸库", chars: 2459 },
-    { name: "补痕", chars: 2756 },
-    { name: "旧录", chars: 4041 },
-    { name: "夜会", chars: 4211 },
-    { name: "账签", chars: 4147 },
-    { name: "照并", chars: 1823 },
-    { name: "落笔", chars: 2191 },
-    { name: "封账", chars: 3112 },
-    { name: "定水", chars: 3140 },
-    { name: "划线", chars: 2843 },
-    { name: "未收", chars: 2519 },
-    { name: "第一眼", chars: 2632 },
-    { name: "勿拆", chars: 2759 },
-    { name: "夜查", chars: 3424 },
-    { name: "半截骨头", chars: 4511 },
-    { name: "候验席", chars: 3246 },
-    { name: "旧死了", chars: 3343 }
-  ],
-  timeline: [
-    { ch: "ch0", event: "沈怀死陈亦醒来", type: "转折" },
-    { ch: "ch1", event: "停尸房穿越", type: "发现" },
-    { ch: "ch5", event: "陆执灯出场", type: "人物" },
-    { ch: "ch14", event: "你到底是谁", type: "转折" },
-    { ch: "ch14.5", event: "陆执灯交易", type: "转折" },
-    { ch: "ch16", event: "废纸库补痕", type: "发现" },
-    { ch: "ch19", event: "夜会导淮", type: "转折" },
-    { ch: "ch20", event: "银号出场", type: "人物" },
-    { ch: "ch21", event: "誊录第三栏", type: "危机" },
-    { ch: "ch23", event: "照并封案", type: "危机" },
-    { ch: "ch24", event: "杜衡问底稿", type: "危机" },
-    { ch: "ch27", event: "余损三十七项", type: "发现" },
-    { ch: "ch28", event: "沈怀后手", type: "发现" }
-  ],
-  worldSettings: [
-    { name: "水衡司", type: "机构", desc: "管水的衙门" },
-    { name: "录房", type: "部门", desc: "誊录核账封册" },
-    { name: "中枢", type: "上级", desc: "朝廷控制地方" },
-    { name: "背债银号", type: "灰色势力", desc: "买卖情报判断" },
-    { name: "导淮", type: "地下组织", desc: "下湾幸存者" },
-    { name: "下湾", type: "地点", desc: "旧堤旧工区" },
-    { name: "废纸库", type: "地点", desc: "录房后面旧屋" }
-  ]
-};
-
-function loadData() {
-  const saved = localStorage.getItem(LS_KEY);
-  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
-
-function saveData() {
-  const data = {
-    characters: [],
-    relationships: [],
-    chapters: [],
-    timeline: [],
-    worldSettings: []
-  };
-  document.querySelectorAll('.char-card').forEach(card => {
-    data.characters.push({
-      name: card.querySelector('.char-name')?.textContent.trim() || "",
-      role: card.querySelector('.char-role')?.textContent.trim() || "",
-      desc: card.querySelector('.char-desc')?.textContent.trim() || "",
-      color: card.dataset.color || "#666"
-    });
-  });
-  document.querySelectorAll('.rel-row').forEach(row => {
-    data.relationships.push({
-      from: row.querySelector('.rel-from')?.textContent.trim() || "",
-      to: row.querySelector('.rel-to')?.textContent.trim() || "",
-      label: row.querySelector('.rel-label')?.textContent.trim() || "",
-      strength: parseInt(row.querySelector('.rel-strength')?.textContent.trim()) || 3
-    });
-  });
-  document.querySelectorAll('.ch-item').forEach(item => {
-    data.chapters.push({
-      name: item.querySelector('.ch-name')?.textContent.trim() || "",
-      chars: parseInt(item.querySelector('.ch-chars')?.textContent.trim()) || 0
-    });
-  });
-  document.querySelectorAll('.tl-item').forEach(item => {
-    data.timeline.push({
-      ch: item.querySelector('.tl-ch')?.textContent.trim() || "",
-      event: item.querySelector('.tl-event')?.textContent.trim() || "",
-      type: item.querySelector('.tl-type')?.textContent.trim() || ""
-    });
-  });
-  document.querySelectorAll('.ws-card').forEach(card => {
-    data.worldSettings.push({
-      name: card.querySelector('.ws-name')?.textContent.trim() || "",
-      type: card.querySelector('.ws-type')?.textContent.trim() || "",
-      desc: card.querySelector('.ws-desc')?.textContent.trim() || ""
-    });
-  });
-  localStorage.setItem(LS_KEY, JSON.stringify(data));
-}
-
-function resetData() {
-  localStorage.removeItem(LS_KEY);
-  location.reload();
-}
-
-function exportJSON() {
-  const data = loadData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'bairizhihou_data.json';
-  a.click();
-}
-
-function renderCharacters(data) {
-  const grid = document.getElementById('character-grid');
-  grid.innerHTML = data.characters.map(c => `
-    <div class="bg-[#111] rounded-xl p-5 gradient-border card-hover char-card" data-color="${c.color}">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background:${c.color}">${c.name[0]}</div>
-        <div>
-          <div class="font-bold text-white char-name" contenteditable="true">${c.name}</div>
-          <div class="text-xs text-gray-500 char-role" contenteditable="true">${c.role}</div>
+    <!-- Right content -->
+    <div class="flex-1 bg-[#0d0d1a] rounded-r-xl border border-l-0 border-gray-800 flex flex-col">
+      <div class="p-4 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <h3 id="chapterTitle" class="text-lg font-bold text-gray-200">选择章节</h3>
+          <span id="chapterWordCount" class="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">0字</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="copyChapter()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">复制本章</button>
+          <button onclick="copyAllChapters()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">复制全文</button>
+          <button onclick="exportChapterTXT()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">导出TXT</button>
         </div>
       </div>
-      <p class="text-gray-400 text-sm leading-relaxed char-desc" contenteditable="true">${c.desc}</p>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div id="chapterContent" class="min-h-full text-gray-300 focus:outline-none" contenteditable="true" oninput="onChapterEdit()"></div>
+      </div>
     </div>
-  `).join('');
+  </div>
+</div>
+
+<!-- Tab: Characters -->
+<div id="tab-characters" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="characterGrid"></div>
+  <div class="mt-6">
+    <button onclick="addCharacter()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加人物</button>
+  </div>
+</div>
+
+<!-- Tab: Relationships -->
+<div id="tab-relations" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <h3 class="text-lg font-bold mb-4 text-gray-200">关系网络</h3>
+      <svg id="relationSvg" width="100%" height="400" class="bg-[#0a0a18] rounded-lg"></svg>
+    </div>
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <h3 class="text-lg font-bold mb-4 text-gray-200">关系列表</h3>
+      <div id="relationList" class="space-y-3"></div>
+      <button onclick="addRelation()" class="mt-4 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加关系</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: World Settings -->
+<div id="tab-world" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="worldGrid"></div>
+  <div class="mt-6">
+    <button onclick="addWorldSetting()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加设定</button>
+  </div>
+</div>
+
+<!-- Tab: Timeline -->
+<div id="tab-timeline" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto">
+    <div id="timelineContainer" class="relative pl-8"></div>
+    <div class="mt-6 text-center">
+      <button onclick="addTimelineEvent()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加事件</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Notes -->
+<div id="tab-notes" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <div id="notesContainer" class="space-y-4"></div>
+    <div class="mt-6">
+      <button onclick="addNote()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加笔记</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
+<script>
+const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes' };
+let chaptersData = [];
+let analysisData = { characters: [], relationships: [], worldSettings: [], timeline: [] };
+let notesData = [];
+let selectedChapter = 0;
+let chartInstance = null;
+
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.background = type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#6366f1';
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 2500);
 }
 
-function renderChart(data) {
-  const ctx = document.getElementById('wordChart').getContext('2d');
-  const labels = data.chapters.map(ch => ch.name);
-  const values = data.chapters.map(ch => ch.chars);
-  const max = Math.max(...values);
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function load(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
 
-  new Chart(ctx, {
+async function initData() {
+  const savedChapters = load(LS_KEYS.chapters);
+  const savedAnalysis = load(LS_KEYS.analysis);
+  const savedNotes = load(LS_KEYS.notes);
+
+  if (savedChapters && savedAnalysis) {
+    chaptersData = savedChapters;
+    analysisData = savedAnalysis;
+    notesData = savedNotes || [];
+  } else {
+    try {
+      const [chRes, anRes] = await Promise.all([
+        fetch('data/chapters.json'),
+        fetch('data/analysis.json')
+      ]);
+      chaptersData = await chRes.json();
+      analysisData = await anRes.json();
+      notesData = [];
+      save(LS_KEYS.chapters, chaptersData);
+      save(LS_KEYS.analysis, analysisData);
+      save(LS_KEYS.notes, notesData);
+    } catch (e) {
+      console.error('Failed to load data:', e);
+      toast('数据加载失败', 'error');
+    }
+  }
+  renderAll();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('tab-active');
+    btn.classList.add('tab-inactive');
+    if (btn.dataset.tab === tab) {
+      btn.classList.add('tab-active');
+      btn.classList.remove('tab-inactive');
+    }
+  });
+  if (tab === 'overview') renderOverview();
+  if (tab === 'relations') renderRelationGraph();
+}
+
+function renderAll() {
+  renderOverview();
+  renderChapterList();
+  renderCharacters();
+  renderRelations();
+  renderWorldSettings();
+  renderTimeline();
+  renderNotes();
+  if (chaptersData.length > 0) selectChapter(0);
+}
+
+// ===== OVERVIEW =====
+function renderOverview() {
+  const totalChars = chaptersData.reduce((s, c) => s + (c.chars_with_punct || 0), 0);
+  const avgChars = chaptersData.length ? Math.round(totalChars / chaptersData.length) : 0;
+  const longest = chaptersData.reduce((a, b) => (a.chars_with_punct||0) > (b.chars_with_punct||0) ? a : b, chaptersData[0]);
+  const shortest = chaptersData.reduce((a, b) => (a.chars_with_punct||0) < (b.chars_with_punct||0) ? a : b, chaptersData[0]);
+
+  document.getElementById('statsCards').innerHTML = [
+    { label: '总字数(含标点)', val: totalChars.toLocaleString() },
+    { label: '章节数', val: chaptersData.length },
+    { label: '角色数', val: analysisData.characters.length },
+    { label: '平均章字数', val: avgChars.toLocaleString() },
+    { label: '最长章', val: (longest?.title || '-') + ' ' + (longest?.chars_with_punct||0) },
+    { label: '最短章', val: (shortest?.title || '-') + ' ' + (shortest?.chars_with_punct||0) }
+  ].map(s => `<div class="stat-card rounded-xl p-4 text-center card-hover"><div class="stat-num text-2xl font-bold">${s.val}</div><div class="text-gray-400 text-xs mt-1">${s.label}</div></div>`).join('');
+
+  renderChart();
+  renderHeatmap();
+}
+
+function renderChart() {
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('chartChapters').getContext('2d');
+  chartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels,
+      labels: chaptersData.map((c, i) => c.title || '第' + (i+1) + '章'),
       datasets: [{
-        label: '字数',
-        data: values,
-        backgroundColor: values.map(v => `rgba(99,102,241,${0.3 + (v/max)*0.7})`),
-        borderColor: 'rgba(99,102,241,0.8)',
-        borderWidth: 1,
+        data: chaptersData.map(c => c.chars_with_punct || 0),
+        backgroundColor: chaptersData.map((_, i) => {
+          const hue = (i * 10 + 230) % 360;
+          return `hsla(${hue}, 70%, 60%, 0.7)`;
+        }),
         borderRadius: 4
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#666', maxRotation: 45 }, grid: { color: '#222' } },
-        y: { ticks: { color: '#666' }, grid: { color: '#222' } }
+        x: { ticks: { color: '#9ca3af', font: { size: 9 }, maxRotation: 90 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
       }
     }
   });
 }
 
-function renderRelations(data) {
-  const svg = document.getElementById('relationSvg');
-  const rect = svg.getBoundingClientRect();
-  const W = rect.width, H = rect.height;
-  const cx = W / 2, cy = H / 2;
-  const radius = Math.min(W, H) * 0.35;
-
-  const positions = {};
-  data.characters.forEach((c, i) => {
-    const angle = (i / data.characters.length) * Math.PI * 2 - Math.PI / 2;
-    positions[c.name] = { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, color: c.color };
+function renderHeatmap() {
+  const chars = analysisData.characters;
+  const chCount = chaptersData.length;
+  if (!chars.length || !chCount) {
+    document.getElementById('heatmapContainer').innerHTML = '<div class="text-gray-500 text-sm">暂无数据</div>';
+    return;
+  }
+  let html = '<table class="text-xs"><tr><th class="px-1 py-1 text-gray-500"></th>';
+  for (let i = 0; i < chCount; i++) html += `<th class="px-1 py-1 text-gray-500" title="${chaptersData[i]?.title||''}">${i+1}</th>`;
+  html += '</tr>';
+  chars.forEach(ch => {
+    html += `<tr><td class="px-2 py-1 text-gray-300 whitespace-nowrap font-medium" style="color:${ch.color}">${ch.name}</td>`;
+    for (let i = 0; i < chCount; i++) {
+      const has = (chapters_data_has_character(ch, i));
+      const intensity = has ? 0.8 : 0.05;
+      const color = ch.color || '#6366f1';
+      html += `<td><div class="heatmap-cell" style="background:${color};opacity:${intensity}" title="${ch.name} - ${chaptersData[i]?.title||''}"></div></td>`;
+    }
+    html += '</tr>';
   });
-
-  let svgContent = '';
-  data.relationships.forEach(r => {
-    const a = positions[r.from], b = positions[r.to];
-    if (!a || !b) return;
-    const opacity = 0.15 + r.strength * 0.1;
-    const width = 0.5 + r.strength * 0.4;
-    svgContent += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="rgba(255,255,255,${opacity})" stroke-width="${width}"/>`;
-    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-    svgContent += `<text x="${mx}" y="${my - 6}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">${r.label}</text>`;
-  });
-
-  data.characters.forEach(c => {
-    const p = positions[c.name];
-    svgContent += `<circle cx="${p.x}" cy="${p.y}" r="24" fill="${p.color}" stroke="rgba(0,0,0,0.3)" stroke-width="2"/>`;
-    svgContent += `<text x="${p.x}" y="${p.y + 1}" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="12" font-weight="bold">${c.name}</text>`;
-    svgContent += `<text x="${p.x}" y="${p.y + 36}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="10">${c.role}</text>`;
-  });
-
-  svg.innerHTML = svgContent;
+  html += '</table>';
+  document.getElementById('heatmapContainer').innerHTML = html;
 }
 
-function renderRelationshipsTable(data) {
-  const grid = document.getElementById('rel-table');
-  if (!grid) return;
-  grid.innerHTML = data.relationships.map(r => `
-    <div class="flex items-center gap-2 bg-[#111] rounded-lg px-4 py-2 gradient-border rel-row">
-      <span class="text-white font-medium flex-1 rel-from" contenteditable="true">${r.from}</span>
-      <span class="text-gray-500">→</span>
-      <span class="text-white font-medium flex-1 rel-to" contenteditable="true">${r.to}</span>
-      <span class="text-gray-400 text-sm flex-1 rel-label" contenteditable="true">${r.label}</span>
-      <span class="text-indigo-400 font-bold w-8 text-center rel-strength" contenteditable="true">${r.strength}</span>
+function chapters_data_has_character(charObj, chapterIdx) {
+  const charName = charObj.name;
+  const ch = chaptersData[chapterIdx];
+  if (!ch || !ch.content) return false;
+  return ch.content.includes(charName);
+}
+
+// ===== CHAPTERS =====
+function renderChapterList(filter = '') {
+  const list = document.getElementById('chapterList');
+  const filtered = chaptersData.map((c, i) => ({...c, idx: i})).filter(c => {
+    if (!filter) return true;
+    return (c.title || '').includes(filter) || (c.content || '').includes(filter);
+  });
+  list.innerHTML = filtered.map(c => `
+    <div class="chapter-item px-4 py-3 border-b border-gray-800/50 ${c.idx === selectedChapter ? 'active' : ''}" onclick="selectChapter(${c.idx})">
+      <div class="text-sm font-medium text-gray-200">${c.title || '未命名章节'}</div>
+      <div class="text-xs text-gray-500 mt-1">${(c.chars_with_punct||0).toLocaleString()}字 · ${c.lines||0}行</div>
     </div>
   `).join('');
 }
 
-function renderTimeline(data) {
-  const container = document.getElementById('timeline-container');
-  const TYPE_MAP = { "转折": "#f59e0b", "发现": "#3b82f6", "人物": "#10b981", "危机": "#ef4444" };
-  let html = '<div class="timeline-line"></div>';
-  data.timeline.forEach((item, i) => {
-    const isLeft = i % 2 === 0;
-    const color = TYPE_MAP[item.type] || '#6366f1';
-    html += `
-      <div class="relative flex items-center mb-8 ${isLeft ? 'flex-row' : 'flex-row-reverse'} tl-item">
-        <div class="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 z-10" style="background:${color};border-color:${color}"></div>
-        <div class="w-[calc(50%-2rem)] ${isLeft ? 'pr-8 text-right' : 'pl-8 text-left'}">
-          <div class="bg-[#111] rounded-xl p-4 gradient-border card-hover">
-            <div class="flex items-center gap-2 mb-1 ${isLeft ? 'justify-end' : ''}">
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium tl-type" style="background:${color}22;color:${color}" contenteditable="true">${item.type}</span>
-              <span class="text-xs text-gray-500 tl-ch" contenteditable="true">${item.ch}</span>
-            </div>
-            <p class="text-gray-300 text-sm tl-event" contenteditable="true">${item.event}</p>
-          </div>
-        </div>
-        <div class="w-[calc(50%-2rem)]"></div>
-      </div>`;
-  });
-  container.innerHTML = html;
+function filterChapters(val) { renderChapterList(val); }
+
+function selectChapter(idx) {
+  selectedChapter = idx;
+  const ch = chaptersData[idx];
+  document.getElementById('chapterTitle').textContent = ch?.title || '未命名';
+  document.getElementById('chapterContent').textContent = ch?.content || '';
+  document.getElementById('chapterWordCount').textContent = (ch?.chars_with_punct || 0) + '字';
+  renderChapterList(document.getElementById('chapterSearch')?.value || '');
 }
 
-function renderWorldSettings(data) {
-  const grid = document.getElementById('world-grid');
-  const icons = { '机构': '🏛️', '部门': '📋', '上级': '👔', '灰色势力': '🌙', '地下组织': '⚔️', '地点': '📍' };
-  const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#3b82f6', '#06b6d4'];
-  grid.innerHTML = data.worldSettings.map((w, i) => `
-    <div class="bg-[#111] rounded-xl p-5 gradient-border card-hover ws-card" style="border-top: 3px solid ${colors[i % colors.length]}">
+function onChapterEdit() {
+  const content = document.getElementById('chapterContent').textContent;
+  chaptersData[selectedChapter].content = content;
+  const cn = (content.match(/[\u4e00-\u9fff]/g) || []).length;
+  const punct = (content.match(/[^\u4e00-\u9fff\n\r\s]/g) || []).length;
+  chaptersData[selectedChapter].chinese_only = cn;
+  chaptersData[selectedChapter].punctuation = punct;
+  chaptersData[selectedChapter].chars_with_punct = cn + punct;
+  chaptersData[selectedChapter].lines = content.split('\n').length;
+  document.getElementById('chapterWordCount').textContent = (cn + punct) + '字';
+  save(LS_KEYS.chapters, chaptersData);
+  renderChapterList(document.getElementById('chapterSearch')?.value || '');
+}
+
+function addChapter() {
+  const num = chaptersData.length + 1;
+  chaptersData.push({
+    title: '新章节 ' + num,
+    content: '',
+    chars_with_punct: 0,
+    chinese_only: 0,
+    punctuation: 0,
+    lines: 0
+  });
+  save(LS_KEYS.chapters, chaptersData);
+  selectChapter(chaptersData.length - 1);
+  renderChapterList();
+  toast('已添加新章节');
+}
+
+function copyChapter() {
+  const ch = chaptersData[selectedChapter];
+  if (!ch) return;
+  navigator.clipboard.writeText(ch.content || '').then(() => toast('已复制本章'));
+}
+
+function copyAllChapters() {
+  const text = chaptersData.map(c => (c.title || '') + '\n\n' + (c.content || '')).join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(() => toast('已复制全文'));
+}
+
+function exportChapterTXT() {
+  const ch = chaptersData[selectedChapter];
+  if (!ch) return;
+  const blob = new Blob([ch.content || ''], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (ch.title || '章节') + '.txt';
+  a.click();
+  toast('已导出TXT');
+}
+
+// ===== CHARACTERS =====
+function renderCharacters() {
+  const grid = document.getElementById('characterGrid');
+  grid.innerHTML = analysisData.characters.map((ch, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 card-hover relative group">
+      <button onclick="deleteCharacter(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition" title="删除">✕</button>
       <div class="flex items-center gap-3 mb-3">
-        <span class="text-2xl">${icons[w.type] || '📄'}</span>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background:${ch.color}">${(ch.name||'?')[0]}</div>
         <div>
-          <div class="font-bold text-white text-lg ws-name" contenteditable="true">${w.name}</div>
-          <div class="text-xs px-2 py-0.5 rounded-full inline-block ws-type" style="background:${colors[i % colors.length]}22;color:${colors[i % colors.length]}" contenteditable="true">${w.type}</div>
+          <div class="font-bold text-gray-200" contenteditable="true" onblur="updateChar(${i},'name',this.textContent)">${ch.name||''}</div>
+          <div class="text-xs text-gray-500" contenteditable="true" onblur="updateChar(${i},'role',this.textContent)">${ch.role||''}</div>
         </div>
       </div>
-      <p class="text-gray-400 text-sm leading-relaxed ws-desc" contenteditable="true">${w.desc}</p>
+      <div class="text-sm text-gray-400 mb-3" contenteditable="true" onblur="updateChar(${i},'desc',this.textContent)">${ch.desc||''}</div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs text-gray-500">颜色:</span>
+        <input type="color" value="${ch.color||'#6366f1'}" onchange="updateChar(${i},'color',this.value);this.previousElementSibling.parentElement.querySelector('.w-10').style.background=this.value" class="w-6 h-6 rounded cursor-pointer border-0">
+      </div>
+      <div class="text-xs text-indigo-300 italic" contenteditable="true" onblur="updateChar(${i},'quote',this.textContent)">"${ch.quote||''}"</div>
     </div>
   `).join('');
 }
 
-function renderAll() {
-  const data = loadData();
-  renderCharacters(data);
-  renderChart(data);
-  renderRelations(data);
-  renderTimeline(data);
-  renderWorldSettings(data);
+function updateChar(i, field, val) {
+  analysisData.characters[i][field] = val;
+  save(LS_KEYS.analysis, analysisData);
+  if (field === 'name' || field === 'color') renderCharacters();
 }
 
-document.addEventListener('blur', e => {
-  if (e.target.hasAttribute('contenteditable')) saveData();
-}, true);
+function addCharacter() {
+  analysisData.characters.push({ name: '新角色', role: '', desc: '', color: '#6366f1', quote: '' });
+  save(LS_KEYS.analysis, analysisData);
+  renderCharacters();
+  toast('已添加人物');
+}
 
-document.addEventListener('input', e => {
-  if (e.target.hasAttribute('contenteditable')) {
-    clearTimeout(e.target._debounce);
-    e.target._debounce = setTimeout(saveData, 500);
+function deleteCharacter(i) {
+  if (!confirm('确定删除该人物？')) return;
+  analysisData.characters.splice(i, 1);
+  save(LS_KEYS.analysis, analysisData);
+  renderCharacters();
+  toast('已删除');
+}
+
+// ===== RELATIONS =====
+function renderRelations() {
+  const list = document.getElementById('relationList');
+  list.innerHTML = analysisData.relationships.map((r, i) => `
+    <div class="flex items-center gap-2 bg-[#0a0a18] rounded-lg p-3 border border-gray-800 group">
+      <input value="${r.from}" onchange="updateRel(${i},'from',this.value)" class="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
+      <span class="text-gray-600">→</span>
+      <input value="${r.to}" onchange="updateRel(${i},'to',this.value)" class="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
+      <input value="${r.label}" onchange="updateRel(${i},'label',this.value)" class="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
+      <input type="number" min="1" max="5" value="${r.strength}" onchange="updateRel(${i},'strength',+this.value)" class="w-14 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 text-center focus:outline-none focus:border-indigo-500">
+      <button onclick="deleteRel(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+    </div>
+  `).join('');
+  renderRelationGraph();
+}
+
+function updateRel(i, field, val) {
+  analysisData.relationships[i][field] = val;
+  save(LS_KEYS.analysis, analysisData);
+  renderRelationGraph();
+}
+
+function addRelation() {
+  analysisData.relationships.push({ from: '', to: '', label: '', strength: 3 });
+  save(LS_KEYS.analysis, analysisData);
+  renderRelations();
+  toast('已添加关系');
+}
+
+function deleteRel(i) {
+  analysisData.relationships.splice(i, 1);
+  save(LS_KEYS.analysis, analysisData);
+  renderRelations();
+  toast('已删除');
+}
+
+function renderRelationGraph() {
+  const svg = document.getElementById('relationSvg');
+  if (!svg) return;
+  const width = svg.clientWidth || 600;
+  const height = 400;
+  const names = [...new Set(analysisData.relationships.flatMap(r => [r.from, r.to].filter(Boolean)))];
+  if (!names.length) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#6b7280" font-size="14">暂无关系数据</text>'; return; }
+
+  const cx = width / 2, cy = height / 2;
+  const radius = Math.min(width, height) * 0.35;
+  const positions = {};
+  names.forEach((n, i) => {
+    const angle = (i / names.length) * Math.PI * 2 - Math.PI / 2;
+    positions[n] = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+  });
+
+  let html = '';
+  analysisData.relationships.forEach(r => {
+    if (!positions[r.from] || !positions[r.to]) return;
+    const p1 = positions[r.from], p2 = positions[r.to];
+    html += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" class="relationship-line" stroke-width="${r.strength || 2}"/>`;
+    const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    html += `<text x="${mx}" y="${my - 5}" text-anchor="middle" fill="#9ca3af" font-size="10">${r.label}</text>`;
+  });
+
+  names.forEach(n => {
+    const p = positions[n];
+    const charObj = analysisData.characters.find(c => c.name === n);
+    const color = charObj?.color || '#6366f1';
+    html += `<circle cx="${p.x}" cy="${p.y}" r="22" fill="${color}" class="relationship-node" opacity="0.85"/>`;
+    html += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">${n}</text>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+// ===== WORLD SETTINGS =====
+function renderWorldSettings() {
+  const grid = document.getElementById('worldGrid');
+  grid.innerHTML = analysisData.worldSettings.map((w, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 card-hover relative group">
+      <button onclick="deleteWorldSetting(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xs px-2 py-0.5 bg-indigo-900/50 text-indigo-300 rounded" contenteditable="true" onblur="updateWorld(${i},'type',this.textContent)">${w.type||''}</span>
+        <span class="font-bold text-gray-200" contenteditable="true" onblur="updateWorld(${i},'name',this.textContent)">${w.name||''}</span>
+      </div>
+      <div class="text-sm text-gray-400" contenteditable="true" onblur="updateWorld(${i},'desc',this.textContent)">${w.desc||''}</div>
+    </div>
+  `).join('');
+}
+
+function updateWorld(i, field, val) {
+  analysisData.worldSettings[i][field] = val;
+  save(LS_KEYS.analysis, analysisData);
+}
+
+function addWorldSetting() {
+  analysisData.worldSettings.push({ name: '新设定', type: '', desc: '' });
+  save(LS_KEYS.analysis, analysisData);
+  renderWorldSettings();
+  toast('已添加设定');
+}
+
+function deleteWorldSetting(i) {
+  analysisData.worldSettings.splice(i, 1);
+  save(LS_KEYS.analysis, analysisData);
+  renderWorldSettings();
+  toast('已删除');
+}
+
+// ===== TIMELINE =====
+function renderTimeline() {
+  const container = document.getElementById('timelineContainer');
+  const typeColors = { turning: '#f59e0b', discovery: '#10b981', character: '#6366f1', crisis: '#ef4444' };
+  container.innerHTML = analysisData.timeline.map((t, i) => `
+    <div class="relative flex items-start gap-4 mb-6 group">
+      <div class="timeline-line" style="height: calc(100% + 16px)"></div>
+      <div class="timeline-dot flex-shrink-0 mt-1" style="border-color:${typeColors[t.type]||'#818cf8'}"></div>
+      <div class="flex-1 bg-[#111128] rounded-lg p-4 border border-gray-800 relative">
+        <button onclick="deleteTimelineEvent(${i})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs px-2 py-0.5 rounded" style="background:${typeColors[t.type]||'#6366f1'}22;color:${typeColors[t.type]||'#818cf8'}">${t.type||'event'}</span>
+          <span class="text-xs text-gray-500">第${t.ch??'?'}章</span>
+        </div>
+        <div class="text-sm text-gray-300" contenteditable="true" onblur="updateTimeline(${i},'event',this.textContent)">${t.event||''}</div>
+        <div class="flex gap-2 mt-2">
+          <input type="number" min="0" value="${t.ch??0}" onchange="updateTimeline(${i},'ch',+this.value)" class="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-400 focus:outline-none focus:border-indigo-500" placeholder="章节">
+          <select onchange="updateTimeline(${i},'type',this.value)" class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-400 focus:outline-none focus:border-indigo-500">
+            <option value="turning" ${t.type==='turning'?'selected':''}>转折</option>
+            <option value="discovery" ${t.type==='discovery'?'selected':''}>发现</option>
+            <option value="character" ${t.type==='character'?'selected':''}>人物</option>
+            <option value="crisis" ${t.type==='crisis'?'selected':''}>危机</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateTimeline(i, field, val) {
+  analysisData.timeline[i][field] = val;
+  save(LS_KEYS.analysis, analysisData);
+}
+
+function addTimelineEvent() {
+  analysisData.timeline.push({ ch: 0, event: '新事件', type: 'turning' });
+  save(LS_KEYS.analysis, analysisData);
+  renderTimeline();
+  toast('已添加事件');
+}
+
+function deleteTimelineEvent(i) {
+  analysisData.timeline.splice(i, 1);
+  save(LS_KEYS.analysis, analysisData);
+  renderTimeline();
+  toast('已删除');
+}
+
+// ===== NOTES =====
+function renderNotes() {
+  const container = document.getElementById('notesContainer');
+  if (!notesData.length) {
+    container.innerHTML = '<div class="empty-state">还没有笔记，点击下方按钮添加</div>';
+    return;
   }
-});
+  container.innerHTML = notesData.map((n, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
+      <button onclick="deleteNote(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="text-xs text-gray-500 mb-2">${n.time || ''}</div>
+      <div class="text-gray-300 min-h-[80px] focus:outline-none" contenteditable="true" onblur="updateNote(${i},this.textContent)">${n.text||''}</div>
+    </div>
+  `).join('');
+}
 
-window.addEventListener('resize', () => {
-  const data = loadData();
-  renderRelations(data);
-});
+function addNote() {
+  notesData.push({ text: '', time: new Date().toLocaleString('zh-CN') });
+  save(LS_KEYS.notes, notesData);
+  renderNotes();
+  toast('已添加笔记');
+}
 
-renderAll();
+function updateNote(i, val) {
+  notesData[i].text = val;
+  save(LS_KEYS.notes, notesData);
+}
+
+function deleteNote(i) {
+  notesData.splice(i, 1);
+  save(LS_KEYS.notes, notesData);
+  renderNotes();
+  toast('已删除');
+}
+
+// ===== GLOBAL SEARCH =====
+function globalSearchFn(query) {
+  if (!query.trim()) return;
+  switchTab('chapters');
+  document.getElementById('chapterSearch').value = query;
+  filterChapters(query);
+  // Also highlight in content if a chapter matches
+  const idx = chaptersData.findIndex(c => (c.content || '').includes(query));
+  if (idx >= 0) selectChapter(idx);
+}
+
+// ===== IMPORT / EXPORT / RESET =====
+function exportAllJSON() {
+  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '创作控制台_备份_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('已导出全部JSON');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.chapters) chaptersData = data.chapters;
+      if (data.analysis) analysisData = data.analysis;
+      if (data.notes) notesData = data.notes;
+      save(LS_KEYS.chapters, chaptersData);
+      save(LS_KEYS.analysis, analysisData);
+      save(LS_KEYS.notes, notesData);
+      renderAll();
+      toast('导入成功');
+    } catch (err) {
+      toast('导入失败：JSON格式错误', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetData() {
+  if (!confirm('确定要重置所有数据？localStorage中的数据将被清除，重新从文件加载。')) return;
+  localStorage.removeItem(LS_KEYS.chapters);
+  localStorage.removeItem(LS_KEYS.analysis);
+  localStorage.removeItem(LS_KEYS.notes);
+  notesData = [];
+  initData();
+  toast('已重置');
+}
+
+// Init
+initData();
 </script>
-
 </body>
 </html>
