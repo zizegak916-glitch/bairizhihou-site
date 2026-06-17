@@ -63,8 +63,10 @@
     <button onclick="switchTab('characters')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="characters">👤 人物</button>
     <button onclick="switchTab('relations')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="relations">🔗 关系</button>
     <button onclick="switchTab('world')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="world">🌍 世界设定</button>
+    <button onclick="switchTab('worldbuilding')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="worldbuilding">🌐 世界观</button>
     <button onclick="switchTab('timeline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="timeline">⏳ 时间线</button>
     <button onclick="switchTab('outline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="outline">📋 大纲</button>
+    <button onclick="switchTab('patches')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="patches">🔧 补丁集</button>
     <button onclick="switchTab('notes')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="notes">📝 笔记</button>
   </div>
 </nav>
@@ -148,6 +150,38 @@
   </div>
 </div>
 
+<!-- Tab: Worldbuilding (世界观) -->
+<div id="tab-worldbuilding" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <!-- 势力版图 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">🏛️ 势力版图</h2>
+    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
+      <div id="factionsContent" class="min-h-[300px] text-gray-300 focus:outline-none leading-relaxed whitespace-pre-wrap" contenteditable="true" oninput="saveFactions()"></div>
+    </div>
+  </div>
+
+  <!-- 能力体系 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">⚡ 能力体系</h2>
+    <div id="abilitiesList" class="space-y-3"></div>
+    <button onclick="addAbility()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加能力</button>
+  </div>
+
+  <!-- 地理 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📍 地理</h2>
+    <div id="locationsList" class="space-y-3"></div>
+    <button onclick="addLocation()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加地点</button>
+  </div>
+
+  <!-- 规则/制度 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📜 规则 / 制度</h2>
+    <div id="rulesList" class="space-y-3"></div>
+    <button onclick="addRule()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加规则</button>
+  </div>
+</div>
+
 <!-- Tab: Timeline -->
 <div id="tab-timeline" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
   <div class="max-w-3xl mx-auto">
@@ -189,6 +223,30 @@
   </div>
 </div>
 
+<!-- Tab: Patches (补丁集) -->
+<div id="tab-patches" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
+  <!-- 补丁列表 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">🔧 补丁列表</h2>
+    <div id="patchesList" class="space-y-3"></div>
+    <button onclick="addPatch()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加补丁</button>
+  </div>
+
+  <!-- 待办区 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📋 待办</h2>
+    <div id="todosList" class="space-y-2"></div>
+    <button onclick="addTodo()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加待办</button>
+  </div>
+
+  <!-- 版本记录 -->
+  <div class="mb-8">
+    <h2 class="text-xl font-bold text-gray-200 mb-4">📝 版本记录</h2>
+    <div id="versionsList" class="space-y-3"></div>
+    <button onclick="addVersion()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加版本</button>
+  </div>
+</div>
+
 <!-- Tab: Notes -->
 <div id="tab-notes" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
   <div class="max-w-4xl mx-auto">
@@ -203,11 +261,13 @@
 <div id="toastContainer"></div>
 
 <script>
-const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes', outline: 'cz_outline' };
+const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes', outline: 'cz_outline', worldbuilding: 'cz_worldbuilding', patches: 'cz_patches' };
 let chaptersData = [];
 let analysisData = { characters: [], relationships: [], worldSettings: [], timeline: [] };
 let notesData = [];
 let outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
+let worldbuildingData = { factions: '', abilities: [], locations: [], rules: [] };
+let patchesData = { patches: [], todos: [], versions: [] };
 let selectedChapter = 0;
 let chartInstance = null;
 
@@ -227,11 +287,15 @@ async function initData() {
   const savedChapters = load(LS_KEYS.chapters);
   const savedAnalysis = load(LS_KEYS.analysis);
   const savedNotes = load(LS_KEYS.notes);
+  const savedWorldbuilding = load(LS_KEYS.worldbuilding);
+  const savedPatches = load(LS_KEYS.patches);
 
   if (savedChapters && savedAnalysis) {
     chaptersData = savedChapters;
     analysisData = savedAnalysis;
     notesData = savedNotes || [];
+    worldbuildingData = savedWorldbuilding || getDefaultWorldbuilding();
+    patchesData = savedPatches || getDefaultPatches();
   } else {
     try {
       const [chRes, anRes] = await Promise.all([
@@ -241,9 +305,13 @@ async function initData() {
       chaptersData = await chRes.json();
       analysisData = await anRes.json();
       notesData = [];
+      worldbuildingData = getDefaultWorldbuilding();
+      patchesData = getDefaultPatches();
       save(LS_KEYS.chapters, chaptersData);
       save(LS_KEYS.analysis, analysisData);
       save(LS_KEYS.notes, notesData);
+      save(LS_KEYS.worldbuilding, worldbuildingData);
+      save(LS_KEYS.patches, patchesData);
     } catch (e) {
       console.error('Failed to load data:', e);
       toast('数据加载失败', 'error');
@@ -276,6 +344,8 @@ function renderAll() {
   renderTimeline();
   renderNotes();
   renderOutline();
+  renderWorldbuilding();
+  renderPatches();
   if (chaptersData.length > 0) selectChapter(0);
 }
 
@@ -681,7 +751,7 @@ function globalSearchFn(query) {
 
 // ===== IMPORT / EXPORT / RESET =====
 function exportAllJSON() {
-  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData, outline: outlineData };
+  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData, outline: outlineData, worldbuilding: worldbuildingData, patches: patchesData };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -701,10 +771,14 @@ function importJSON(event) {
       if (data.analysis) analysisData = data.analysis;
       if (data.notes) notesData = data.notes;
       if (data.outline) outlineData = data.outline;
+      if (data.worldbuilding) worldbuildingData = data.worldbuilding;
+      if (data.patches) patchesData = data.patches;
       save(LS_KEYS.chapters, chaptersData);
       save(LS_KEYS.analysis, analysisData);
       save(LS_KEYS.notes, notesData);
       save(LS_KEYS.outline, outlineData);
+      save(LS_KEYS.worldbuilding, worldbuildingData);
+      save(LS_KEYS.patches, patchesData);
       renderAll();
       toast('导入成功');
     } catch (err) {
@@ -721,8 +795,12 @@ function resetData() {
   localStorage.removeItem(LS_KEYS.analysis);
   localStorage.removeItem(LS_KEYS.notes);
   localStorage.removeItem(LS_KEYS.outline);
+  localStorage.removeItem(LS_KEYS.worldbuilding);
+  localStorage.removeItem(LS_KEYS.patches);
   notesData = [];
   outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
+  worldbuildingData = getDefaultWorldbuilding();
+  patchesData = getDefaultPatches();
   initData();
   toast('已重置');
 }
@@ -906,6 +984,317 @@ function deleteSuspense(i) {
 function saveOutline() {
   outlineData.story = document.getElementById('storyOutline').textContent;
   save(LS_KEYS.outline, outlineData);
+}
+
+// ===== WORLDBUILDING =====
+function getDefaultWorldbuilding() {
+  return {
+    factions: `【水衡司（官方）】
+管水衙门，朝廷中枢下属机构。
+下设：录房（核心机要）、工料库（物资调配）、废纸库（废弃档案存放）。
+职能：管理地方水务、河道治理、堤防修缮，同时承担朝廷下达的各类文书事务。
+实质上是朝廷控制地方的触手，通过"前牍"制度（旧档调阅权）掌握地方命脉。
+
+【中枢（上级）】
+朝廷中枢，水衡司的直接上级。
+通过"前牍"控制地方——前牍是旧档调阅权，中枢可以随时调取地方任何已归档的文书。
+是整个体制的核心，地方一切事务最终都要上报中枢。
+
+【背债银号（灰色）】
+买卖情报和判断的灰色机构。
+核心人物：白灯账使。
+运作方式：以"背债"为名，实则进行情报交易、利益交换。
+既不属于官方，也不完全属于地下，是体制内外的灰色地带。
+
+【导淮（地下）】
+下湾幸存者组成的地下组织。
+核心诉求：反对体制，追求真相。
+起源：下湾三十七项（下湾事件）的幸存者，因体制的不公而走到一起。
+与陈亦/沈怀的关系：潜在的盟友，但立场微妙。`,
+    abilities: [
+      { name: '墨未干', owner: '沈怀（原有）→陈亦（继承）', desc: '看见纸上未干的墨迹，能读取刚写下的文字内容，无论时间过去多久', limit: '只能看见墨迹，无法看见更早的书写痕迹', cost: '使用时会暂时失去对其他文字的感知' },
+      { name: '补痕', owner: '陈亦（新获得）', desc: '接住残痕，让纸自己吐出更多——能从残缺的文档中补全缺失的信息', limit: '补全的内容可能不完全准确，需要验证', cost: '每次使用会消耗纸张的生命力' },
+      { name: '截声', owner: '曹留', desc: '截断声音，让人慢半拍——可以在关键时刻让目标的听觉反应延迟', limit: '作用时间短，只能影响一个人', cost: '使用后自己也会短暂失聪' }
+    ],
+    locations: [
+      { name: '水衡司', position: '城内衙门', desc: '管水衙门所在地，朝廷中枢下属机构的办公场所', events: '陈亦穿越后第一天到达，日常办公场所' },
+      { name: '录房', position: '水衡司核心', desc: '水衡司最核心的部门，存放重要档案和机密文书', events: '陈亦通过测试后进入，发现沈怀的遗留线索' },
+      { name: '下湾', position: '旧堤旁旧工区', desc: '下湾事件发生地，曾经的工区，现在是废墟', events: '下湾三十七项事件，导淮组织的起源地' },
+      { name: '废纸库', position: '录房后面', desc: '存放废弃档案的地方，看似无用实则藏有关键信息', events: '陈亦在此进行测试，发现重要线索' },
+      { name: '旧堤', position: '城外堤防', desc: '城外的旧堤防，年久失修，与下湾事件有关', events: '下湾事件的关联地点' }
+    ],
+    rules: [
+      { name: '承册制度', desc: '死了也能承——官员死后，其职责和文书由继任者"承册"继续处理', impact: '陈亦以沈怀身份承册，必须继续处理沈怀未完成的事务' },
+      { name: '封册制度', desc: '墨未干不出案——只有当文书上的墨迹未干时，才能立案处理', impact: '限制了案件的处理时效，也影响了陈亦能力的使用' },
+      { name: '誊录制度', desc: '大件入房拆栏分誊——大型文书必须拆分誊录，分别归档', impact: '导致信息碎片化，增加了调查难度，但也提供了可利用的漏洞' }
+    ]
+  };
+}
+
+function renderWorldbuilding() {
+  document.getElementById('factionsContent').textContent = worldbuildingData.factions;
+  renderAbilities();
+  renderLocations();
+  renderRules();
+}
+
+function saveFactions() {
+  worldbuildingData.factions = document.getElementById('factionsContent').textContent;
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+}
+
+function renderAbilities() {
+  const container = document.getElementById('abilitiesList');
+  container.innerHTML = worldbuildingData.abilities.map((a, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
+      <button onclick="deleteAbility(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-indigo-400 font-bold" contenteditable="true" onblur="updateAbility(${i},'name',this.textContent)">${a.name}</span>
+        <span class="text-xs text-gray-500">持有者:</span>
+        <span class="text-sm text-gray-400" contenteditable="true" onblur="updateAbility(${i},'owner',this.textContent)">${a.owner}</span>
+      </div>
+      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateAbility(${i},'desc',this.textContent)">${a.desc}</div>
+      <div class="text-xs text-gray-500">限制: <span contenteditable="true" onblur="updateAbility(${i},'limit',this.textContent)">${a.limit}</span></div>
+      <div class="text-xs text-gray-500">代价: <span contenteditable="true" onblur="updateAbility(${i},'cost',this.textContent)">${a.cost}</span></div>
+    </div>
+  `).join('');
+}
+
+function updateAbility(i, field, val) {
+  worldbuildingData.abilities[i][field] = val;
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+}
+
+function addAbility() {
+  worldbuildingData.abilities.push({ name: '新能力', owner: '', desc: '', limit: '', cost: '' });
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderAbilities();
+  toast('已添加能力');
+}
+
+function deleteAbility(i) {
+  if (!confirm('确定删除该能力？')) return;
+  worldbuildingData.abilities.splice(i, 1);
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderAbilities();
+  toast('已删除');
+}
+
+function renderLocations() {
+  const container = document.getElementById('locationsList');
+  container.innerHTML = worldbuildingData.locations.map((l, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
+      <button onclick="deleteLocation(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-emerald-400 font-bold" contenteditable="true" onblur="updateLocation(${i},'name',this.textContent)">${l.name}</span>
+        <span class="text-xs text-gray-500">位置:</span>
+        <span class="text-sm text-gray-400" contenteditable="true" onblur="updateLocation(${i},'position',this.textContent)">${l.position}</span>
+      </div>
+      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateLocation(${i},'desc',this.textContent)">${l.desc}</div>
+      <div class="text-xs text-gray-500">关联事件: <span contenteditable="true" onblur="updateLocation(${i},'events',this.textContent)">${l.events}</span></div>
+    </div>
+  `).join('');
+}
+
+function updateLocation(i, field, val) {
+  worldbuildingData.locations[i][field] = val;
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+}
+
+function addLocation() {
+  worldbuildingData.locations.push({ name: '新地点', position: '', desc: '', events: '' });
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderLocations();
+  toast('已添加地点');
+}
+
+function deleteLocation(i) {
+  if (!confirm('确定删除该地点？')) return;
+  worldbuildingData.locations.splice(i, 1);
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderLocations();
+  toast('已删除');
+}
+
+function renderRules() {
+  const container = document.getElementById('rulesList');
+  container.innerHTML = worldbuildingData.rules.map((r, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
+      <button onclick="deleteRule(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-amber-400 font-bold" contenteditable="true" onblur="updateRule(${i},'name',this.textContent)">${r.name}</span>
+      </div>
+      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateRule(${i},'desc',this.textContent)">${r.desc}</div>
+      <div class="text-xs text-gray-500">影响: <span contenteditable="true" onblur="updateRule(${i},'impact',this.textContent)">${r.impact}</span></div>
+    </div>
+  `).join('');
+}
+
+function updateRule(i, field, val) {
+  worldbuildingData.rules[i][field] = val;
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+}
+
+function addRule() {
+  worldbuildingData.rules.push({ name: '新规则', desc: '', impact: '' });
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderRules();
+  toast('已添加规则');
+}
+
+function deleteRule(i) {
+  if (!confirm('确定删除该规则？')) return;
+  worldbuildingData.rules.splice(i, 1);
+  save(LS_KEYS.worldbuilding, worldbuildingData);
+  renderRules();
+  toast('已删除');
+}
+
+// ===== PATCHES =====
+function getDefaultPatches() {
+  return {
+    patches: [
+      { location: 'ch06', type: '情节补充', status: '已完成', desc: '赵小吏+孟舟出场已添加', detail: '' },
+      { location: 'ch14.5', type: '情节补充', status: '已完成', desc: '陆执灯交易新场景已添加', detail: '' },
+      { location: 'ch16', type: '情节补充', status: '已完成', desc: '陆执灯擦肩已添加', detail: '' },
+      { location: 'ch18', type: '情节补充', status: '已完成', desc: '陆执灯递沈怀纸条已添加', detail: '' },
+      { location: 'ch19', type: '世界观补充', status: '已完成', desc: '下湾描写已添加', detail: '' }
+    ],
+    todos: [
+      { text: 'ch11-13加轻松日常', done: false },
+      { text: 'ch24加陆执灯出场', done: false },
+      { text: 'ch27-28加陆执灯', done: false },
+      { text: '老孟个人戏', done: false },
+      { text: '杜衡提前铺垫', done: false }
+    ],
+    versions: [
+      { label: 'v4', desc: '初版32章' },
+      { label: 'v5', desc: 'ch15-28重写' },
+      { label: 'v6', desc: '加陆执灯+世界观+群像+轻松' }
+    ]
+  };
+}
+
+function renderPatches() {
+  renderPatchesList();
+  renderTodos();
+  renderVersions();
+}
+
+function renderPatchesList() {
+  const container = document.getElementById('patchesList');
+  const statusColors = { '待处理': 'bg-yellow-900/50 text-yellow-300', '进行中': 'bg-blue-900/50 text-blue-300', '已完成': 'bg-green-900/50 text-green-300' };
+  const typeColors = { 'bug修复': 'text-red-400', '情节补充': 'text-emerald-400', '对话优化': 'text-blue-400', '世界观补充': 'text-purple-400', '风格调整': 'text-amber-400' };
+  container.innerHTML = patchesData.patches.map((p, i) => `
+    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
+      <button onclick="deletePatch(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
+      <div class="flex items-center gap-3 mb-2 flex-wrap">
+        <span class="text-sm font-bold text-gray-200" contenteditable="true" onblur="updatePatch(${i},'location',this.textContent)">${p.location}</span>
+        <select onchange="updatePatch(${i},'type',this.value)" class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs ${typeColors[p.type]||'text-gray-400'} focus:outline-none focus:border-indigo-500">
+          <option value="bug修复" ${p.type==='bug修复'?'selected':''}>bug修复</option>
+          <option value="情节补充" ${p.type==='情节补充'?'selected':''}>情节补充</option>
+          <option value="对话优化" ${p.type==='对话优化'?'selected':''}>对话优化</option>
+          <option value="世界观补充" ${p.type==='世界观补充'?'selected':''}>世界观补充</option>
+          <option value="风格调整" ${p.type==='风格调整'?'selected':''}>风格调整</option>
+        </select>
+        <select onchange="updatePatch(${i},'status',this.value)" class="px-2 py-1 text-xs rounded ${statusColors[p.status]||''} focus:outline-none focus:border-indigo-500 border border-gray-700 bg-gray-800">
+          <option value="待处理" ${p.status==='待处理'?'selected':''}>待处理</option>
+          <option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option>
+          <option value="已完成" ${p.status==='已完成'?'selected':''}>已完成</option>
+        </select>
+      </div>
+      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updatePatch(${i},'desc',this.textContent)">${p.desc}</div>
+      <div class="text-xs text-gray-500" contenteditable="true" onblur="updatePatch(${i},'detail',this.textContent)">${p.detail||'详细内容...'}</div>
+    </div>
+  `).join('');
+}
+
+function updatePatch(i, field, val) {
+  patchesData.patches[i][field] = val;
+  save(LS_KEYS.patches, patchesData);
+  if (field === 'type' || field === 'status') renderPatchesList();
+}
+
+function addPatch() {
+  patchesData.patches.push({ location: '', type: '情节补充', status: '待处理', desc: '', detail: '' });
+  save(LS_KEYS.patches, patchesData);
+  renderPatchesList();
+  toast('已添加补丁');
+}
+
+function deletePatch(i) {
+  if (!confirm('确定删除该补丁？')) return;
+  patchesData.patches.splice(i, 1);
+  save(LS_KEYS.patches, patchesData);
+  renderPatchesList();
+  toast('已删除');
+}
+
+function renderTodos() {
+  const container = document.getElementById('todosList');
+  container.innerHTML = patchesData.todos.map((t, i) => `
+    <div class="flex items-center gap-3 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})" class="w-4 h-4 rounded cursor-pointer accent-indigo-500">
+      <div class="flex-1 text-sm ${t.done?'text-gray-500 line-through':'text-gray-300'} focus:outline-none" contenteditable="true" onblur="updateTodo(${i},this.textContent)">${t.text}</div>
+      <button onclick="deleteTodo(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+    </div>
+  `).join('');
+}
+
+function toggleTodo(i) {
+  patchesData.todos[i].done = !patchesData.todos[i].done;
+  save(LS_KEYS.patches, patchesData);
+  renderTodos();
+}
+
+function updateTodo(i, val) {
+  patchesData.todos[i].text = val;
+  save(LS_KEYS.patches, patchesData);
+}
+
+function addTodo() {
+  patchesData.todos.push({ text: '新待办', done: false });
+  save(LS_KEYS.patches, patchesData);
+  renderTodos();
+  toast('已添加待办');
+}
+
+function deleteTodo(i) {
+  patchesData.todos.splice(i, 1);
+  save(LS_KEYS.patches, patchesData);
+  renderTodos();
+  toast('已删除');
+}
+
+function renderVersions() {
+  const container = document.getElementById('versionsList');
+  container.innerHTML = patchesData.versions.map((v, i) => `
+    <div class="flex items-center gap-3 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
+      <span class="text-indigo-400 font-bold text-sm" contenteditable="true" onblur="updateVersion(${i},'label',this.textContent)">${v.label}</span>
+      <span class="text-gray-600">:</span>
+      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" onblur="updateVersion(${i},'desc',this.textContent)">${v.desc}</div>
+      <button onclick="deleteVersion(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
+    </div>
+  `).join('');
+}
+
+function updateVersion(i, field, val) {
+  patchesData.versions[i][field] = val;
+  save(LS_KEYS.patches, patchesData);
+}
+
+function addVersion() {
+  patchesData.versions.push({ label: 'v' + (patchesData.versions.length + 4), desc: '' });
+  save(LS_KEYS.patches, patchesData);
+  renderVersions();
+  toast('已添加版本');
+}
+
+function deleteVersion(i) {
+  patchesData.versions.splice(i, 1);
+  save(LS_KEYS.patches, patchesData);
+  renderVersions();
+  toast('已删除');
 }
 
 // Init
