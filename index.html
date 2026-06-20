@@ -23,6 +23,9 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
 .chapter-nav-btn{background:#1e1e3a;border:1px solid #2e2e4a;color:#d4d4d4;padding:8px 20px;border-radius:8px;cursor:pointer;transition:all .2s;font-size:14px}
 .chapter-nav-btn:hover{background:#2e2e4a;border-color:#8b5cf6}
 .chapter-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.copy-btn{background:#1e1e3a;border:1px solid #2e2e4a;color:#888;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;font-size:13px;display:inline-flex;align-items:center;gap:4px}
+.copy-btn:hover{background:#2e2e4a;color:#fff;border-color:#8b5cf6}
+.copy-btn.copied{background:#2ecc71;border-color:#2ecc71;color:#fff}
 .heatmap-cell{width:14px;height:14px;border-radius:2px;transition:transform .1s}
 .heatmap-cell:hover{transform:scale(1.8);z-index:10}
 .stat-card{background:linear-gradient(135deg,#111128 0%,#1a1a3e 100%);border:1px solid #1e1e3a;border-radius:12px;padding:20px;text-align:center}
@@ -65,7 +68,7 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
 </main>
 
 <script>
-let chaptersData=[],analysisData={},currentChapter=1,chartInstance=null;
+let chaptersData=[],analysisData={},currentChapter=0,chartInstance=null;
 
 async function loadData(){
   const [chRes,anRes]=await Promise.all([
@@ -88,8 +91,8 @@ function renderAll(){
 
 function renderOverview(){
   const panel=document.getElementById('panel-overview');
-  const totalChars=chaptersData.slice(1).reduce((s,c)=>s+c.chars_with_punct,0);
-  const chapterCount=chaptersData.length-1;
+  const totalChars=chaptersData.reduce((s,c)=>s+c.chars_with_punct,0);
+  const chapterCount=chaptersData.length;
   const avgChars=Math.round(totalChars/chapterCount);
   const charCount=analysisData.characters?analysisData.characters.length:0;
 
@@ -111,8 +114,8 @@ function renderOverview(){
   panel.innerHTML=html;
 
   const labels=[],values=[];
-  for(let i=1;i<chaptersData.length;i++){
-    labels.push('第'+i+'章');
+  for(let i=0;i<chaptersData.length;i++){
+    labels.push('第'+(i+1)+'章');
     values.push(chaptersData[i].chars_with_punct);
   }
   const ctx=document.getElementById('barChart').getContext('2d');
@@ -133,7 +136,7 @@ function renderHeatmap(){
   const container=document.getElementById('heatmapContainer');
   if(!analysisData.characters||!container)return;
   const coreChars=analysisData.characters.filter(c=>['陈亦','陆执灯','曹留','谢观成','罗小满','老孟','杜衡','沈怀'].includes(c.name));
-  const chapterCount=chaptersData.length-1;
+  const chapterCount=chaptersData.length;
   let html='<div style="display:flex;gap:4px;margin-bottom:8px;padding-left:90px">';
   for(let i=1;i<=chapterCount;i++){
     html+='<div style="width:14px;text-align:center;font-size:9px;color:#555">'+i+'</div>';
@@ -142,12 +145,12 @@ function renderHeatmap(){
   for(const ch of coreChars){
     html+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">';
     html+='<div style="width:82px;text-align:right;font-size:12px;color:'+ch.color+';flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+ch.name+'</div>';
-    for(let i=1;i<chaptersData.length;i++){
+    for(let i=0;i<chaptersData.length;i++){
       const content=chaptersData[i].content||'';
       const count=(content.match(new RegExp(ch.name,'g'))||[]).length;
       const intensity=Math.min(count/5,1);
       const bg=intensity===0?'#1a1a2e':`rgba(${parseInt(ch.color.slice(1,3),16)},${parseInt(ch.color.slice(3,5),16)},${parseInt(ch.color.slice(5,7),16)},${0.2+intensity*0.8})`;
-      html+='<div class="heatmap-cell" style="background:'+bg+'" title="'+ch.name+' 第'+i+'章: '+count+'次"></div>';
+      html+='<div class="heatmap-cell" style="background:'+bg+'" title="'+ch.name+' 第'+(i+1)+'章: '+count+'次"></div>';
     }
     html+='</div>';
   }
@@ -156,27 +159,26 @@ function renderHeatmap(){
 
 function renderChapters(){
   const panel=document.getElementById('panel-chapters');
-  const chapterList=chaptersData.slice(1);
   let listHtml='';
-  chapterList.forEach((ch,i)=>{
+  chaptersData.forEach((ch,i)=>{
     const num=i+1;
-    listHtml+=`<div class="chapter-item" data-idx="${num}" onclick="selectChapter(${num})" style="padding:10px 16px;cursor:pointer;border-radius:8px;transition:background .15s;font-size:14px;color:${num===currentChapter?'#fff':'#888'};background:${num===currentChapter?'#1e1e3a':'transparent'};margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${num}. ${ch.title.substring(0,25)}</div>`;
+    listHtml+=`<div class="chapter-item" data-idx="${i}" onclick="selectChapter(${i})" style="padding:10px 16px;cursor:pointer;border-radius:8px;transition:background .15s;font-size:14px;color:${i===currentChapter?'#fff':'#888'};background:${i===currentChapter?'#1e1e3a':'transparent'};margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${num}. ${ch.title.substring(0,25)}</div>`;
   });
 
   panel.innerHTML=`
   <div style="display:flex;gap:16px;align-items:flex-start">
     <div id="chapterSidebar" style="width:260px;flex-shrink:0;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto;background:#0d0d1a;border-radius:12px;border:1px solid #1e1e3a;padding:8px" class="desktop-sidebar">
-      <div style="padding:8px 16px;font-size:14px;font-weight:600;color:#8b5cf6;margin-bottom:4px">目录 (${chapterList.length}章)</div>
+      <div style="padding:8px 16px;font-size:14px;font-weight:600;color:#8b5cf6;margin-bottom:4px">目录 (${chaptersData.length}章)</div>
       ${listHtml}
     </div>
     <div id="mobileDropdown" style="display:none;width:100%;margin-bottom:16px">
       <select id="chapterSelect" onchange="selectChapter(+this.value)" style="width:100%;padding:12px;background:#111128;color:#d4d4d4;border:1px solid #1e1e3a;border-radius:8px;font-size:15px;font-family:serif">
-        ${chapterList.map((ch,i)=>`<option value="${i+1}" ${i+1===currentChapter?'selected':''}>${i+1}. ${ch.title.substring(0,30)}</option>`).join('')}
+        ${chaptersData.map((ch,i)=>`<option value="${i}" ${i===currentChapter?'selected':''}>${i+1}. ${ch.title.substring(0,30)}</option>`).join('')}
       </select>
     </div>
     <div style="flex:1;min-width:0">
       <div id="chapterDisplay"></div>
-      <div style="display:flex;justify-content:space-between;margin-top:24px;padding:0 16px" id="chapterNav"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding:0 16px;flex-wrap:wrap;gap:8px" id="chapterNav"></div>
     </div>
   </div>`;
   selectChapter(currentChapter);
@@ -197,14 +199,16 @@ function updateSidebarVisibility(){
   }
 }
 
-function selectChapter(num){
-  currentChapter=num;
-  const ch=chaptersData[num];
+function selectChapter(idx){
+  currentChapter=idx;
+  const ch=chaptersData[idx];
   if(!ch)return;
   const display=document.getElementById('chapterDisplay');
+  const num=idx+1;
   const paragraphs=ch.content.split('\n').filter(p=>p.trim());
   let contentHtml='<div class="chapter-content">';
-  contentHtml+=`<h1 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:24px;text-indent:0;font-family:serif;text-align:center">${ch.title}</h1>`;
+  contentHtml+=`<h1 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;text-indent:0;font-family:serif;text-align:center">第${num}章 ${ch.title}</h1>`;
+  contentHtml+=`<div style="text-align:center;margin-bottom:24px"><button class="copy-btn" onclick="copyChapter(${idx})" id="copyBtn${idx}">📋 复制本章</button> <button class="copy-btn" onclick="copyAllChapters()">📄 复制全文</button></div>`;
   for(const p of paragraphs){
     if(p.startsWith('第')&&p.includes('章')){
       contentHtml+=`<p style="text-indent:0;color:#8b5cf6;font-weight:600;font-size:19px;margin-bottom:16px;text-align:center">${p}</p>`;
@@ -217,20 +221,42 @@ function selectChapter(num){
 
   const nav=document.getElementById('chapterNav');
   nav.innerHTML=`
-    <button class="chapter-nav-btn" onclick="selectChapter(${num-1})" ${num<=1?'disabled':''}>← 上一章</button>
-    <span style="color:#555;font-size:13px;line-height:36px">${num} / ${chaptersData.length-1}</span>
-    <button class="chapter-nav-btn" onclick="selectChapter(${num+1})" ${num>=chaptersData.length-1?'disabled':''}>下一章 →</button>`;
+    <button class="chapter-nav-btn" onclick="selectChapter(${idx-1})" ${idx<=0?'disabled':''}>← 上一章</button>
+    <span style="color:#555;font-size:13px;line-height:36px">${num} / ${chaptersData.length}</span>
+    <button class="chapter-nav-btn" onclick="selectChapter(${idx+1})" ${idx>=chaptersData.length-1?'disabled':''}>下一章 →</button>`;
 
   document.querySelectorAll('.chapter-item').forEach(el=>{
-    const idx=+el.dataset.idx;
-    el.style.color=idx===num?'#fff':'#888';
-    el.style.background=idx===num?'#1e1e3a':'transparent';
+    const i=+el.dataset.idx;
+    el.style.color=i===idx?'#fff':'#888';
+    el.style.background=i===idx?'#1e1e3a':'transparent';
   });
 
   const sel=document.getElementById('chapterSelect');
-  if(sel)sel.value=num;
+  if(sel)sel.value=idx;
 
   display.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copyChapter(idx){
+  const ch=chaptersData[idx];
+  if(!ch)return;
+  const num=idx+1;
+  const text=`第${num}章 ${ch.title}\n\n${ch.content.replace(/^第[一二三四五六七八九十]+章.*\n*/,'')}`;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copyBtn'+idx);
+    if(btn){btn.textContent='✅ 已复制';btn.classList.add('copied');setTimeout(()=>{btn.textContent='📋 复制本章';btn.classList.remove('copied')},2000)}
+  });
+}
+
+function copyAllChapters(){
+  let text='人间仍存\n\n';
+  chaptersData.forEach((ch,i)=>{
+    text+=`第${i+1}章 ${ch.title}\n\n${ch.content.replace(/^第[一二三四五六七八九十]+章.*\n*/,'')}\n\n${'═'.repeat(30)}\n\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>{
+    const btns=document.querySelectorAll('.copy-btn');
+    btns.forEach(b=>{if(b.textContent.includes('全文')){b.textContent='✅ 已复制';b.classList.add('copied');setTimeout(()=>{b.textContent='📄 复制全文';b.classList.remove('copied')},2000)}});
+  });
 }
 
 function renderCharacters(){
@@ -303,7 +329,8 @@ function renderWorld(){
 
 function renderOutline(){
   const panel=document.getElementById('panel-outline');
-  const structure=chaptersData[0];
+  // 找结构文档（标题含"结构"或"v9"的第一章）
+  const structure=chaptersData.find(c=>c.title.includes('结构')||c.title.includes('v9')||c.title.includes('优化'));
   if(!structure){panel.innerHTML='<p style="color:#666">无大纲数据</p>';return;}
   const paragraphs=structure.content.split('\n').filter(p=>p.trim());
   let html='<div class="outline-content"><h2 style="font-size:22px;font-weight:700;color:#8b5cf6;margin-bottom:24px;text-align:center">📋 结构文档 · 大纲</h2>';
