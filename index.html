@@ -1,2323 +1,378 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>人间仍存 - 创作控制台</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <style>
-    * { scrollbar-width: thin; scrollbar-color: #333 #0a0a0f; }
-    body { background: #0a0a0f; color: #e5e7eb; font-family: system-ui, -apple-system, sans-serif; }
-    .tab-active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
-    .tab-inactive { background: #1a1a2e; color: #9ca3af; }
-    .tab-inactive:hover { background: #252540; color: #e5e7eb; }
-    [contenteditable]:focus { outline: 1px dashed rgba(99,102,241,0.6); outline-offset: 2px; border-radius: 4px; }
-    [contenteditable]:hover { background: rgba(99,102,241,0.05); }
-    .chapter-item { transition: all 0.15s; cursor: pointer; }
-    .chapter-item:hover { background: rgba(99,102,241,0.1); }
-    .chapter-item.active { background: rgba(99,102,241,0.2); border-left: 3px solid #818cf8; }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-    .stat-card { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); border: 1px solid rgba(99,102,241,0.2); }
-    .stat-num { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .search-highlight { background: rgba(250,204,21,0.3); border-radius: 2px; padding: 0 2px; }
-    .heatmap-cell { width: 28px; height: 28px; border-radius: 4px; transition: all 0.15s; }
-    .heatmap-cell:hover { transform: scale(1.3); z-index: 10; }
-    .timeline-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #818cf8; background: #0a0a0f; position: relative; z-index: 2; }
-    .timeline-line { position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #6366f1, #8b5cf6); z-index: 1; }
-    .relationship-line { stroke: #6366f1; stroke-width: 2; fill: none; opacity: 0.6; }
-    .relationship-node { cursor: pointer; transition: r 0.2s; }
-    .relationship-node:hover { r: 28; }
-    .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-danger { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-    .btn-danger:hover { background: rgba(239,68,68,0.4); }
-    #chapterContent { line-height: 1.8; font-size: 16px; white-space: pre-wrap; word-wrap: break-word; }
-    .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 9999; animation: fadeInUp 0.3s ease; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .empty-state { border: 2px dashed rgba(99,102,241,0.3); border-radius: 12px; padding: 40px; text-align: center; color: #6b7280; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人间仍存</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#0a0a0f}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#555}
+.nav-tab{padding:8px 16px;white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-size:14px;color:#888;user-select:none}
+.nav-tab:hover{color:#d4d4d4}
+.nav-tab.active{color:#fff;border-bottom-color:#8b5cf6}
+.card{background:#111128;border:1px solid #1e1e3a;border-radius:12px;padding:20px;transition:transform .15s}
+.card:hover{transform:translateY(-1px)}
+.chapter-content{font-size:18px;line-height:2.0;color:#d4d4d4;max-width:700px;margin:0 auto;padding:20px}
+.chapter-content p{margin-bottom:1em;text-indent:2em}
+.chapter-nav-btn{background:#1e1e3a;border:1px solid #2e2e4a;color:#d4d4d4;padding:8px 20px;border-radius:8px;cursor:pointer;transition:all .2s;font-size:14px}
+.chapter-nav-btn:hover{background:#2e2e4a;border-color:#8b5cf6}
+.chapter-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.heatmap-cell{width:14px;height:14px;border-radius:2px;transition:transform .1s}
+.heatmap-cell:hover{transform:scale(1.8);z-index:10}
+.stat-card{background:linear-gradient(135deg,#111128 0%,#1a1a3e 100%);border:1px solid #1e1e3a;border-radius:12px;padding:20px;text-align:center}
+@media(max-width:768px){
+  .chapter-content{font-size:17px;padding:16px}
+  .nav-tab{padding:8px 12px;font-size:13px}
+}
+.tab-panel{display:none;animation:fadeIn .25s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.world-card{border-left:3px solid}
+.outline-content{font-size:16px;line-height:1.9;color:#c4c4c4;max-width:750px;margin:0 auto}
+.outline-content p{margin-bottom:.8em}
+</style>
 </head>
-<body class="min-h-screen">
-
-<!-- Top Navigation -->
-<nav class="sticky top-0 z-50 bg-[#0d0d1a]/95 backdrop-blur border-b border-gray-800">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">人间仍存 · 创作控制台</h1>
+<body>
+<nav id="topNav" style="position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#0a0a1a 0%,#111128 100%);border-bottom:1px solid #1e1e3a">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center">
+    <div style="padding:12px 16px;font-size:18px;font-weight:bold;color:#8b5cf6;white-space:nowrap;font-family:serif">人间仍存</div>
+    <div id="tabsContainer" style="display:flex;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none" class="no-scrollbar">
+      <div class="nav-tab active" data-tab="overview">📊 概览</div>
+      <div class="nav-tab" data-tab="chapters">📖 正文</div>
+      <div class="nav-tab" data-tab="characters">👤 人物</div>
+      <div class="nav-tab" data-tab="relations">🔗 关系</div>
+      <div class="nav-tab" data-tab="world">🌍 世界观</div>
+      <div class="nav-tab" data-tab="outline">📋 大纲</div>
+      <div class="nav-tab" data-tab="patches">🔧 补丁集</div>
     </div>
-    <div class="flex items-center gap-2">
-      <input id="globalSearch" type="text" placeholder="搜索全文..." class="px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm w-48 focus:outline-none focus:border-indigo-500" oninput="globalSearchFn(this.value)">
-      <button onclick="resetData()" class="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-300 text-sm rounded-lg transition border border-red-600/30">重置</button>
-      <button onclick="exportAllJSON()" class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">导出JSON</button>
-      <label class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 text-sm rounded-lg transition border border-purple-600/30 cursor-pointer">
-        导入JSON
-        <input type="file" accept=".json" onchange="importJSON(event)" class="hidden">
-      </label>
-    </div>
-  </div>
-  <div class="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto">
-    <button onclick="switchTab('overview')" class="tab-btn tab-active px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="overview">📊 概览</button>
-    <button onclick="switchTab('chapters')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="chapters">📖 正文</button>
-    <button onclick="switchTab('characters')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="characters">👤 人物</button>
-    <button onclick="switchTab('relations')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="relations">🔗 关系</button>
-    <button onclick="switchTab('world')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="world">🌍 世界设定</button>
-    <button onclick="switchTab('worldbuilding')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="worldbuilding">🌐 世界观</button>
-    <button onclick="switchTab('timeline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="timeline">⏳ 时间线</button>
-    <button onclick="switchTab('outline')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="outline">📋 大纲</button>
-    <button onclick="switchTab('patches')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="patches">🔧 补丁集</button>
-    <button onclick="switchTab('notes')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="notes">📝 笔记</button>
-    <button onclick="switchTab('wanliu')" class="tab-btn tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-tab="wanliu">🌌 万流名册</button>
   </div>
 </nav>
 
-<!-- Tab: Overview -->
-<div id="tab-overview" class="tab-content max-w-7xl mx-auto px-4 py-8">
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" id="statsCards"></div>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <h3 class="text-lg font-bold mb-4 text-gray-200">各章字数</h3>
-      <canvas id="chartChapters" height="200"></canvas>
-    </div>
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <h3 class="text-lg font-bold mb-4 text-gray-200">角色出场热力图</h3>
-      <div class="overflow-x-auto" id="heatmapContainer"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Chapters -->
-<div id="tab-chapters" class="tab-content hidden max-w-7xl mx-auto px-4 py-6">
-  <div class="flex h-[calc(100vh-140px)]">
-    <!-- Left sidebar -->
-    <div class="w-80 flex-shrink-0 bg-[#111128] rounded-l-xl border border-gray-800 flex flex-col">
-      <div class="p-3 border-b border-gray-800">
-        <input id="chapterSearch" type="text" placeholder="搜索章节..." class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500" oninput="filterChapters(this.value)">
-      </div>
-      <div class="flex-1 overflow-y-auto" id="chapterList"></div>
-      <div class="p-3 border-t border-gray-800">
-        <button onclick="addChapter()" class="w-full py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加新章节</button>
-      </div>
-    </div>
-    <!-- Right content -->
-    <div class="flex-1 bg-[#0d0d1a] rounded-r-xl border border-l-0 border-gray-800 flex flex-col">
-      <div class="p-4 border-b border-gray-800 flex items-center justify-between flex-wrap gap-2">
-        <div class="flex items-center gap-3">
-          <h3 id="chapterTitle" class="text-lg font-bold text-gray-200">选择章节</h3>
-          <span id="chapterWordCount" class="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">0字</span>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="copyChapter()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">复制本章</button>
-          <button onclick="copyAllChapters()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">复制全文</button>
-          <button onclick="exportChapterTXT()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-sm rounded-lg transition">导出TXT</button>
-        </div>
-      </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <div id="chapterContent" class="min-h-full text-gray-300 focus:outline-none" contenteditable="true" oninput="onChapterEdit()"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Characters -->
-<div id="tab-characters" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册人物</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500"><h3 class="font-bold text-amber-300">头号背锅人</h3><p class="text-xs text-gray-400">正账者创始人</p><p class="text-gray-300 text-sm mt-1">第一个自愿替万民承担因果的工头。用肉身硬接数万人劳震，双臂从此无法弯曲。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500"><h3 class="font-bold text-amber-300">卢修斯·铁手</h3><p class="text-xs text-gray-400">铁锈工坊执政官 / 清账者</p><p class="text-gray-300 text-sm mt-1">唯一主动削减大勋作规模的执政官。弹劾前夜独自承接无楔劳震。终溃为闭眼黄铜雕像。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-purple-500"><h3 class="font-bold text-purple-300">无名修女</h3><p class="text-xs text-gray-400">天国圣座 / 清账者</p><p class="text-gray-300 text-sm mt-1">十一年站在唱诗班孩童前方。「我没有救任何人。但我每次都站在他们前面。」</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-blue-500"><h3 class="font-bold text-blue-300">寒铁</h3><p class="text-xs text-gray-400">极北精算师 / 清账者</p><p class="text-gray-300 text-sm mt-1">伪造更低死亡数字23年，避免约四万人过劳死亡。「我以为算得出来就有责任。」</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-red-500"><h3 class="font-bold text-red-300">泥足先生</h3><p class="text-xs text-gray-400">神州流官考课制创始人</p><p class="text-gray-300 text-sm mt-1">建立流官考课制。汞变解蔓延至颈部。最后政令死后第十三年被废除。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-emerald-500"><h3 class="font-bold text-emerald-300">主角（无名）</h3><p class="text-xs text-gray-400">穿越者 / 复式记账法</p><p class="text-gray-300 text-sm mt-1">来自另一个地球。名字在历史记录上半秒后被绝墨碎屑侵蚀消失。唯一能让历史的结算在局部暂缓的人。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-violet-500"><h3 class="font-bold text-violet-300">第三号孩子</h3><p class="text-xs text-gray-400">赎罪券黑市创建者</p><p class="text-gray-300 text-sm mt-1">无名修女保护对象。死前：够了。这些年够了。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-indigo-500"><h3 class="font-bold text-indigo-300">第十七号孩子</h3><p class="text-xs text-gray-400">零度真理社成员</p><p class="text-gray-300 text-sm mt-1">有一个人曾经每次都站在我前面。我一直觉得我应该用这件事做些什么。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-gray-500"><h3 class="font-bold text-gray-300">大坞主联盟</h3><p class="text-xs text-gray-400">太阳露台统治者</p><p class="text-gray-300 text-sm mt-1">把终溃供奉为树神信仰。谎言——终溃者意识固化后陷入极度痛苦的永久清醒。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-purple-600"><h3 class="font-bold text-purple-200">枢机处</h3><p class="text-xs text-gray-400">天国圣座统治层</p><p class="text-gray-300 text-sm mt-1">溃变越深的主教越神圣。最后一任蜡化至只剩面部和声带，沉默两小时被视为神迹。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-blue-600"><h3 class="font-bold text-blue-200">蜂群</h3><p class="text-xs text-gray-400">极北冰原区操作系统</p><p class="text-gray-300 text-sm mt-1">没有单视角没有权力欲望。推算元老院崩溃早于方舟完工13年。选择沉默。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-yellow-600"><h3 class="font-bold text-yellow-200">苏丹</h3><p class="text-xs text-gray-400">极西砂海统治者</p><p class="text-gray-300 text-sm mt-1">血源配方库。浮台悬停在流沙上，没有出口。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-pink-600"><h3 class="font-bold text-pink-200">城主府</h3><p class="text-xs text-gray-400">绝响原统治者</p><p class="text-gray-300 text-sm mt-1">以为在使用断弦琴。实际是沉默收藏者在使用他们校准收藏精度。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-stone-500"><h3 class="font-bold text-stone-300">台肚居民</h3><p class="text-xs text-gray-400">极西砂海底层</p><p class="text-gray-300 text-sm mt-1">浮台下方两万人。三派共住：谈判筹码 vs 毫无意义 vs 继续维修。</p></div>
-      <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-stone-600"><h3 class="font-bold text-stone-400">聆冤录研究员</h3><p class="text-xs text-gray-400">审计委员会边缘人</p><p class="text-gray-300 text-sm mt-1">听死人骨头说话。退休传统：朗读骨鸣。不是给任何人听。</p></div>
-    </div>
-  </div>
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📖 人间仍存人物（可编辑）</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="characterGrid"></div>
-    <div class="mt-6">
-      <button onclick="addCharacter()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加人物</button>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Relationships -->
-<div id="tab-relations" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <h3 class="text-lg font-bold mb-4 text-gray-200">关系网络</h3>
-      <svg id="relationSvg" width="100%" height="400" class="bg-[#0a0a18] rounded-lg"></svg>
-    </div>
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <h3 class="text-lg font-bold mb-4 text-gray-200">关系列表</h3>
-      <div id="relationList" class="space-y-3"></div>
-      <button onclick="addRelation()" class="mt-4 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加关系</button>
-  <!-- 万流名册组织关系 -->
-  <div class="mt-8">
-    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册组织与关系</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-red-400">四大隐秘组织</h3>
-        <div class="mt-2 space-y-2 text-sm">
-          <p><b class="text-gray-200">匿痕无缝社</b>：代价是一段历史。擦除病变记录，历史也从记忆消失。</p>
-          <p><b class="text-gray-200">背债银号</b>：把溃变卖给不知情的人。委员会：暂不处理。</p>
-          <p><b class="text-gray-200">彻查终局派</b>：追求空账。区别只是我们要推迟，他们要提前。</p>
-          <p><b class="text-gray-200">骨鸣知行会</b>：历史可以被改，骨头不会撒谎。</p>
-        </div>
-      </div>
-      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-blue-400">边缘途径</h3>
-        <div class="mt-2 space-y-2 text-sm">
-          <p><b class="text-gray-200">彻行者</b>：凡人血肉硬顶。最终碑化。凡人可以自己承接，只是代价很大。</p>
-          <p><b class="text-gray-200">朱批客</b>：在账本缝隙偷取寿命。纯粹派 vs 干涉派。</p>
-          <p><b class="text-gray-200">地脉鸣冤者</b>：唯物结界，超凡全失效。「用脏手做干净的事。」</p>
-          <p><b class="text-gray-200">绝迹者</b>：体内融合绝墨碎屑。「不是来赢的，是来让它变得没有意义的。」</p>
-        </div>
-      </div>
-      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-amber-400">审计委员会</h3>
-        <div class="mt-2 space-y-2 text-sm">
-          <p>无军队、无欺天楔。权力来自信息垄断和因果中立性。</p>
-          <p><b class="text-gray-200">核算派</b>：记录不是改变。 <b class="text-gray-200">干涉派</b>：只记录不干涉就是默许。 <b class="text-gray-200">第三条路</b>：在档案边角写下本不该被记录的东西。</p>
-        </div>
-      </div>
-      <div class="bg-gray-800/60 rounded-xl p-4"><h3 class="font-bold text-purple-400">跨地域暗线</h3>
-        <div class="mt-2 space-y-2 text-sm">
-          <p>• 铁锈工坊 ↔ 极北：碎卷海黑市间接交换，蜂群推算元老院崩溃早于方舟完工13年</p>
-          <p>• 神州 ↔ 太阳露台：汞变解与木化溃变机制有未知相似性</p>
-          <p>• 圣座 ↔ 极西：银号秘密运输脂化香蜡作为凝血剂原料</p>
-          <p>• 因果方舟：极北蜂群完全知情（含410万人命运），选择沉默</p>
-        </div>
-      </div>
-    </div>
-  </div>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: World Settings -->
-<div id="tab-world" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="max-w-5xl mx-auto space-y-6">
-
-    <!-- 势力与制度 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
-        <span class="text-2xl">🏛️</span> 势力与制度
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-blue-500">
-          <h3 class="font-bold text-blue-300 mb-2">神州官制</h3>
-          <p class="text-gray-300 text-sm">五品至从三品：官僚机器可自行运转的实权层，靠任书、司印、会推。</p>
-          <p class="text-gray-400 text-sm mt-1">从三品以上：国朝名分承接位，必须借玺书旧式或皇帝名分才能坐实。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-yellow-500">
-          <h3 class="font-bold text-yellow-300 mb-2">奉玺派</h3>
-          <p class="text-gray-300 text-sm">代表：顾廷璋（尚宝司卿）<br>核心：借皇帝名分承功，不是崇拜名器，而是空皇帝承功。</p>
-          <p class="text-gray-400 text-sm mt-1 italic">「国朝虽无临御之帝，皇帝名分未绝。大水之功，不可归一臣。」</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-red-500">
-          <h3 class="font-bold text-red-300 mb-2">承功派</h3>
-          <p class="text-gray-300 text-sm">代表：裴玄纪（水衡司右都水使，从三品附近）<br>核心：裴玄纪以真名承大改淮功，绕开"更高官位需皇帝名分"限制。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-green-500">
-          <h3 class="font-bold text-green-300 mb-2">分功派</h3>
-          <p class="text-gray-300 text-sm">代表：沈确（都察院右佥都御史）<br>核心：大功拆给诸司、历任、各段治水链，不让裴玄纪独吃。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-purple-500">
-          <h3 class="font-bold text-purple-300 mb-2">中立派</h3>
-          <p class="text-gray-300 text-sm">代表：姚观澜（通政司右通政）<br>核心：不押谁，看哪套说法能活到最后。章奏口决定材料先到谁手里。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-gray-500">
-          <h3 class="font-bold text-gray-300 mb-2">清册线</h3>
-          <p class="text-gray-300 text-sm">代表：杜衡（水衡司经历司主簿）<br>核心：清底册、洗盘子。不是吃功的人，是给吃功的人洗盘子。</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 超凡体系 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
-        <span class="text-2xl">⚡</span> 超凡体系
-      </h2>
-      <div class="space-y-4">
-        <div class="bg-gray-700/40 rounded-lg p-4 border border-amber-500/30">
-          <h3 class="font-bold text-amber-300 mb-2">核心术语区分</h3>
-          <div class="text-sm space-y-2">
-            <p><b class="text-amber-200">账 = 历史</b>（同一回事）。盲目、只看结果不看过程的历史运作方式。不是某个实体，不是某种天道，历史本身就是账。</p>
-            <p><b class="text-amber-200">盲目织史者</b> = 旧日常数A，有主神智，可以苏醒/挂机。它不是账本身，而是历史运作背后的那个"记录者"。它的主神智在亿万年前永久盲目挂机，溢散的未完成历史化作星云。</p>
-            <p><b class="text-amber-200">大账</b> = 神州对"历史（账）"的俗称。其他地域有不同叫法。</p>
-            <p><b class="text-amber-200">盲冥大账</b> = 神州对"盲目织史者"的俗称。不是通称，只有神州这么叫。</p>
-            <p class="text-gray-400 text-xs mt-2">⚠ 勿混淆：大账 ≠ 盲冥大账。前者是历史的俗称，后者是织史者的俗称。账无意志、不判定、不拒绝——它只是结算。织史者才有主神智。</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h3 class="font-bold text-amber-300 mb-2">历史（账）的运作</h3>
-          <p class="text-gray-300 text-sm">不认科技，不认过程，只认结果。只要"普通人做不成的事"成立，就立刻结算：成果、能力、代价，一起落下。第一批科学家、工程师死得快，因为历史只认超额结果。历史的结算不问动机，只看结果。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h3 class="font-bold text-amber-300 mb-2">楔（欺天楔）</h3>
-          <p class="text-gray-300 text-sm">本质是做假账。通过把过程、解释、承接者重新写进历史，把真账改写成假账。假账没做完、没定稿、结局没落死之前，历史不会结算。没结算就没有成果、没有能力、更没有代价——不是晚到，是根本没有。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h3 class="font-bold text-amber-300 mb-2">代价本质</h3>
-          <p class="text-gray-300 text-sm">能力不属于自身的排异。无论是平账、假账还是亲自做成的，一旦你做成了普通人做不成的事，能力与代价便同时落下——历史的结算不问动机，只看结果。</p>
-          <p class="text-gray-400 text-sm mt-1">例外：地脉鸣冤者不受账影响；其余旧日力量获得者受账影响较小。</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 核心能力 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
-        <span class="text-2xl">🔥</span> 核心能力
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-red-600">
-          <h3 class="font-bold text-red-300">一帝·许渡（止泽帝）<br><span class="text-sm text-gray-400">能力：断</span></h3>
-          <p class="text-gray-300 text-sm mt-2">凡是已经开始往后接、往外长、往完整结果去成的东西，大部分都能被断掉。断的是延续，不是存在本身。不分善恶。</p>
-          <p class="text-gray-400 text-sm mt-1">历史结算结果：<span class="text-red-300">大泽止步</span></p>
-          <p class="text-gray-400 text-sm">代价：被断住的东西全都堆到他身上，反过来把他断掉。死得极惨。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-orange-600">
-          <h3 class="font-bold text-orange-300">二帝·沈行之（续命帝）<br><span class="text-sm text-gray-400">能力：接续</span></h3>
-          <p class="text-gray-300 text-sm mt-2">让已经断开的东西续上，也让本来不断、但还没完全长出后半截的东西更快接上。不分善恶。</p>
-          <p class="text-gray-400 text-sm mt-1">历史结算结果：<span class="text-orange-300">百断续行</span></p>
-          <p class="text-gray-400 text-sm">代价：乱接，并且疯长。被自己强行接起来的东西反过来把自己接坏了。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-cyan-600">
-          <h3 class="font-bold text-cyan-300">末帝·李承晦（两时帝）<br><span class="text-sm text-gray-400">能力：两时 + 钉一瞬</span></h3>
-          <p class="text-gray-300 text-sm mt-2">原能力：看稳定未来 + 御极定域。获两时后将未来状态定到现在。来到现时后：钉一瞬——截取未来一瞬替换当前状态。</p>
-          <p class="text-gray-400 text-sm mt-1">无欺天楔的现实篡改。收藏家优先更高的藏品。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-emerald-600">
-          <h3 class="font-bold text-emerald-300">陆执灯<br><span class="text-sm text-gray-400">能力：照缝 + 撑缝</span></h3>
-          <p class="text-gray-300 text-sm mt-2">照出一笔账、一段历史、一个结论里还没彻底写死的缝，短时间内撑住。不能无中生有，只能作用于本来就存在裂口之处。</p>
-          <p class="text-gray-400 text-sm mt-1">代价：越看越只能看到裂口，看不到圆满。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-violet-600">
-          <h3 class="font-bold text-violet-300">陈亦/沈怀<br><span class="text-sm text-gray-400">能力：墨未干 → 补痕 → 候</span></h3>
-          <p class="text-gray-300 text-sm mt-2"><b>墨未干</b>（沈怀原有）：看见账还没干。<br><b>补痕</b>（陈亦新长）：顺着已有痕迹继续长出账面结果。<br><b>候</b>（卷末触发）：在结果即将落成时暂不落。</p>
-          <p class="text-gray-400 text-sm mt-1">三者共生：墨未干看湿，补痕续痕，候悬账。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-sky-600">
-          <h3 class="font-bold text-sky-300">谢观成<br><span class="text-sm text-gray-400">能力：定水线</span></h3>
-          <p class="text-gray-300 text-sm mt-2">在现实水势中划出物理边界，使水位、水势被强行分开。只能划单线或短折线，不能闭环，不能消灭水灾。</p>
-          <p class="text-gray-400 text-sm mt-1">代价：挡得越大身体越被"划线"，最终人格和身体被水线切开。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-pink-600">
-          <h3 class="font-bold text-pink-300">曹留<br><span class="text-sm text-gray-400">能力：听声 / 截声 / 回声定位</span></h3>
-          <p class="text-gray-300 text-sm mt-2">听声辨真：从声音听出断续。截声：削掉声音节奏让对方动作慢半拍。回声定位：不用看也知道谁听见了什么。</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 关键事件 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
-        <span class="text-2xl">📌</span> 关键事件与地点
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
-          <div class="text-3xl mb-2">🌊</div>
-          <h3 class="font-bold text-blue-300">大泽止步</h3>
-          <p class="text-gray-400 text-sm mt-1">一帝历史结算结果。大泽来了也吞了很多，但最后停在这里了。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
-          <div class="text-3xl mb-2">🔗</div>
-          <h3 class="font-bold text-orange-300">百断续行</h3>
-          <p class="text-gray-400 text-sm mt-1">二帝历史结算结果。断口被续起来，还能继续往下走。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 text-center">
-          <div class="text-3xl mb-2">💧</div>
-          <h3 class="font-bold text-cyan-300">大改淮</h3>
-          <p class="text-gray-400 text-sm mt-1">治水大工程。三派争功核心事件，贯穿第一卷。</p>
-        </div>
-      </div>
-
-    <!-- 八大旧日 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4">⚡ 八大旧日 + 沉默收藏者</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-amber-300">盲目织史者</b>（神州俗称：盲冥大账）<br><span class="text-gray-400">无限记录格式化。主神智永久挂机。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-gray-300">绝墨空祖</b>（虚妄盲白）<br><span class="text-gray-400">绝对空无擦除。碎裂后形成白忘原。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border border-pink-500/30"><b class="text-pink-300">沉默收藏者</b>（俯瞰八尊）<br><span class="text-gray-400">封存最终状态。废土终结=琥珀。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-orange-300">无休兵戈</b>｜毁灭规模决定结构永久性</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-blue-300">千目千言</b>｜信息辐射｜代价：失去情感</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-purple-300">盲目空蝉</b>｜虚假认知｜代价：无法区分谎言</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-green-300">复苏之巢</b>｜生命畸变｜献质契｜等价交换</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-yellow-300">沉淀百相</b>｜物质终态｜献质契｜等价交换</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-cyan-300">千裂视界</b>｜时空碎裂｜欺天楔干涉</div>
-      </div>
-    </div>
-    <!-- 九大地域 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4">🗺️ 九大地域</h2>
-      <div class="space-y-3">
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-orange-300">❶ 铁锈工坊</b>｜无休兵戈｜大勋作｜领地大印｜铜蜕｜废炉<br><span class="text-gray-400 text-xs">古罗马x黄铜蒸汽。方舟载客60万/总470万。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-blue-300">❷ 极北冰原区</b>｜千目千言｜大熔炼｜授权徽章｜寒解｜冷停机区<br><span class="text-gray-400 text-xs">蜂群x委员会。无名只有编号。催眠40年后失效。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-green-300">❸ 青绿大坞</b>｜复苏之巢｜万民地翻｜天车轮盘｜木化｜绝户地<br><span class="text-gray-400 text-xs">联盟与母巢互相绞杀。终溃供奉=谎言。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-purple-300">❹ 天国圣座</b>｜盲目空蝉｜和声圣震｜圣骨金匣｜脂化｜静默教区<br><span class="text-gray-400 text-xs">溃变越深越神圣。圣歌响了三百年。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-yellow-300">❺ 极西砂海</b>｜沉淀百相｜万骨沙震｜黄金血契｜沙化｜流沙冢<br><span class="text-gray-400 text-xs">浮台悬停流沙上。背债银号反控门阀。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border border-red-500/30"><b class="text-red-300">❻ 神州水衡司</b>｜盲冥大账｜大水役｜九鼎御批｜汞变解｜断流荒<br><span class="text-gray-400 text-xs">人间仍存。300年前崩溃。堤坝石像生。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-cyan-300">❼ 碎卷海</b>｜千裂视界｜响动｜碎戳子｜冤账迸骨｜灰坑<br><span class="text-gray-400 text-xs">不是地域是伤口。六种时态。</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-gray-300">❽ 白忘原</b>｜绝墨空祖｜无役震｜全域死地<br><span class="text-gray-400 text-xs">每30天白日清空。「爱一个人不需要记住他。」</span></div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-pink-300">❾ 绝响原</b>｜沉默收藏者｜广陵役震｜断弦琴｜彩色外壳化｜琥珀之城<br><span class="text-gray-400 text-xs">创作越好越接近被永久封存。</span></div>
-      </div>
-    </div>
-    <!-- 四大物产 -->
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-6">
-      <h2 class="text-xl font-bold text-gray-200 mb-4">📦 四大物产体系</h2>
-      <div class="grid grid-cols-2 gap-3 text-sm">
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-orange-300">震质结渣</b>｜役震废渣｜防线燃料</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-green-300">代偿余肉</b>｜生命渗出物｜延寿药｜成瘾</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-purple-300">墨落呆账</b>｜账本乱码｜黑市硬通货</div>
-        <div class="bg-gray-700/40 rounded-lg p-3"><b class="text-gray-300">零值空壳</b>｜擦除残留｜隔绝历史结算</div>
-      </div>
-    </div>    </div>
-
-  </div>
-</div>
-<!-- Tab: Worldbuilding (世界观) -->
-<div id="tab-worldbuilding" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <!-- 势力版图 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">🏛️ 势力版图</h2>
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <div id="factionsContent" class="min-h-[300px] text-gray-300 focus:outline-none leading-relaxed whitespace-pre-wrap" contenteditable="true" oninput="saveFactions()"></div>
-    </div>
-  </div>
-
-  <!-- 能力体系 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">⚡ 能力体系</h2>
-    <div id="abilitiesList" class="space-y-3"></div>
-    <button onclick="addAbility()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加能力</button>
-  </div>
-
-  <!-- 地理 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📍 地理</h2>
-    <div id="locationsList" class="space-y-3"></div>
-    <button onclick="addLocation()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加地点</button>
-  </div>
-
-  <!-- 规则/制度 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📜 规则 / 制度</h2>
-    <div id="rulesList" class="space-y-3"></div>
-    <button onclick="addRule()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加规则</button>
-  </div>
-</div>
-
-<!-- Tab: Timeline -->
-<div id="tab-timeline" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="max-w-3xl mx-auto">
-    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册时间线</h2>
-    <div class="space-y-3 mb-8">
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-amber-500"><div class="flex gap-4"><span class="text-amber-400 font-bold text-sm whitespace-nowrap w-32">创世（模糊）</span><div><p class="text-gray-200 font-bold text-sm">常数死锁 + 正账者出现</p><p class="text-gray-400 text-xs">头号背锅人首次承接。账要有人背。我来。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-amber-400"><div class="flex gap-4"><span class="text-amber-400 font-bold text-sm whitespace-nowrap w-32">创世后</span><div><p class="text-gray-200 font-bold text-sm">三代腐变</p><p class="text-gray-400 text-xs">殉道者->管理者->门阀。「我必须承担」->「我理应获得」。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-red-500"><div class="flex gap-4"><span class="text-red-400 font-bold text-sm whitespace-nowrap w-32">~137年</span><div><p class="text-gray-200 font-bold text-sm">神州朝廷崩溃</p><p class="text-gray-400 text-xs">末帝凝固进断流荒。最大坏账爆破。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-red-400"><div class="flex gap-4"><span class="text-red-400 font-bold text-sm whitespace-nowrap w-32">~148年</span><div><p class="text-gray-200 font-bold text-sm">泥足先生去世</p><p class="text-gray-400 text-xs">汞变解蔓延至颈部。最后政令13年后废除。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-blue-500"><div class="flex gap-4"><span class="text-blue-400 font-bold text-sm whitespace-nowrap w-32">~200年</span><div><p class="text-gray-200 font-bold text-sm">蜂群形成</p><p class="text-gray-400 text-xs">极北九个精算所出现意识融合。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-purple-500"><div class="flex gap-4"><span class="text-purple-400 font-bold text-sm whitespace-nowrap w-32">~300年</span><div><p class="text-gray-200 font-bold text-sm">沉默收藏者首次被记录</p><p class="text-gray-400 text-xs">委员会评估：低优先级。评估是错的。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-pink-500"><div class="flex gap-4"><span class="text-pink-400 font-bold text-sm whitespace-nowrap w-32">~400年</span><div><p class="text-gray-200 font-bold text-sm">绝响原琥珀化 + 方舟开建</p><p class="text-gray-400 text-xs">聚居点琥珀化。铁锈工坊方舟：载客60万/总470万。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-stone-500"><div class="flex gap-4"><span class="text-stone-400 font-bold text-sm whitespace-nowrap w-32">~417年</span><div><p class="text-gray-200 font-bold text-sm">寒铁被处决</p><p class="text-gray-400 text-xs">23年伪造死亡数字避免约四万人过劳死亡。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-cyan-500"><div class="flex gap-4"><span class="text-cyan-400 font-bold text-sm whitespace-nowrap w-32">~420年</span><div><p class="text-gray-200 font-bold text-sm">惊蛰清算前夜 + 主角穿越</p><p class="text-gray-400 text-xs">各方势力暗流涌动。</p></div></div></div>
-      <div class="bg-gray-800/60 rounded-lg p-3 border-l-4 border-gray-500"><div class="flex gap-4"><span class="text-gray-400 font-bold text-sm whitespace-nowrap w-32">持续</span><div><p class="text-gray-200 font-bold text-sm">白忘原循环 / 聆冤录 / 方舟建造</p><p class="text-gray-400 text-xs">每30天白日清空。骨鸣朗读传统。蜂群选择沉默。</p></div></div></div>
-    </div>
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📖 人间仍存时间线（可编辑）</h2>
-    <div id="timelineContainer" class="relative pl-8"></div>
-    <div class="mt-6 text-center">
-      <button onclick="addTimelineEvent()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加事件</button>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Outline -->
-<div id="tab-outline" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <!-- 故事大纲 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📖 故事大纲</h2>
-    <div class="bg-[#111128] rounded-xl p-6 border border-gray-800">
-      <div id="storyOutline" class="min-h-[300px] text-gray-300 focus:outline-none leading-relaxed" contenteditable="true" oninput="saveOutline()"></div>
-    </div>
-  </div>
-
-  <!-- 章节大纲 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">📑 章节大纲</h2>
-    <div id="chapterOutlineList" class="space-y-2"></div>
-  </div>
-
-  <!-- 情节线索 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">🧩 情节线索</h2>
-    <div id="plotThreadsList" class="space-y-2"></div>
-    <button onclick="addPlotThread()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加线索</button>
-  </div>
-
-  <!-- 悬念/伏笔 -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold text-gray-200 mb-4">❓ 悬念 / 伏笔</h2>
-    <div id="suspenseList" class="space-y-2"></div>
-    <button onclick="addSuspense()" class="mt-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加悬念</button>
-  </div>
-
-  <!-- 万流名册剧情 -->
-  <div class="mt-8">
-    <h2 class="text-xl font-bold text-indigo-300 mb-4">🌌 万流名册剧情线</h2>
-    <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-indigo-500 mb-4">
-      <h3 class="font-bold text-indigo-300">主角弧线</h3>
-      <p class="text-gray-300 text-sm mt-2">抵达废土时：在茫然里寻找意义的人。废土回答：意义不是找到的，是选择的，选择是有代价的。</p>
-      <p class="text-gray-300 text-sm mt-1">弧线终点：不是回家，不是拯救废土，而是面对一件没有人知道、在所有账目上都是零的事，做出了一个选择。</p>
-    </div>
-    <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-red-500 mb-4">
-      <h3 class="font-bold text-red-300">惊蛰大清算</h3>
-      <div class="text-sm text-gray-300 mt-2 space-y-1">
-        <p><b class="text-red-200">一·苏醒先兆：</b>欺天楔从边缘失效。历史开始拒绝假账。</p>
-        <p><b class="text-red-200">二·全面结算：</b>所有神迹同时崩溃，所有溃变同时全速恢复。所有门阀同时终溃。</p>
-        <p><b class="text-red-200">三·格式化爆破：</b>役震承接崩溃。工人融合成历史肉山。</p>
-        <p><b class="text-red-200">四·未知：</b>但若废土先达到收藏者要求的成熟度——清算可能不会发生。</p>
-      </div>
-    </div>
-    <div class="bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500">
-      <h3 class="font-bold text-amber-300">核心矛盾</h3>
-      <div class="text-sm text-gray-300 mt-2 space-y-1">
-        <p>· <b>账要有人背</b>：门阀说他们来但要报酬。旧日信徒说献祭。隐秘组织说篡改。反抗军说不该存在。</p>
-        <p>· <b>清账者的命运</b>：卢修斯闭眼化铜像，无名修女脂化至腰，寒铁被处决——都失败了，但行为发生了，是完整的。</p>
-        <p>· <b>收藏者悖论</b>：越纯粹越接近被封存。但指向具体人的意图是收藏者永远无法收藏的。</p>
-        <p>· <b>复式记账法</b>：唯一能让历史结算在局部暂缓的工具。但盲目织史者苏醒后全部失效。</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Patches (补丁集) -->
-<div id="tab-patches" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="max-w-5xl mx-auto space-y-4">
-
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4 mb-6">
-      <p class="text-gray-300 text-sm">设定整理合并版·第二版。涵盖：历史（账）与楔机制、总时间线、九帝体系、核心人物能力、超凡体系、官制、派系人物等。<br>点击各部分标题展开/折叠。</p>
-    </div>
-
-    <!-- 1. 历史（账）与楔机制 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❶</span>
-        <span class="font-bold text-gray-200">历史（账）与楔机制</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">没有楔时</h4>
-          <p>账（历史本身）是盲目的结果主义。它不认科技，不认过程，只认结果。只要一件"普通人做不成的事"成立，就立刻结算：成果、能力、代价，一起落下。所以第一批科学家、工程师、实干家死得快，不是因为他们接近真相，而是因为他们不断做成普通人做不成的事。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">有楔时</h4>
-          <p>楔的本质不是拖延代价，不是先拿成果。<b>楔的本质是：做假账。</b>它通过把过程、解释、承接者、成立方式重新写进历史，把原本会被直接结算的真账改写成另一条能成立的假账。假账没做完、没定稿、结局没落死之前，历史不会结算。必须钉死：没结算就没有成果、也没有能力、更没有代价。不是晚到，是根本没有。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">真账已先结后</h4>
-          <p>如果真账已经先结了，后面再动楔，就不再是补写，而是：抢已结算结果。难度来自原承接者、既得利益链、已经形成的解释链、已经开始长出的现实后果。所以：如果没人反对，就没有阻力。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">代价本质</h4>
-          <p>账的代价本质是：能力不属于自身的排异。无论是平账、假账还是事情本来就是你亲自做成的，一旦你做成了普通人做不成的事，能力与代价便同时落下——历史的结算不问动机，只看结果。</p>
-          <p class="text-gray-400 mt-1">例外：地脉鸣冤者不受账影响。其余旧日力量获得者受账影响较小。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 2. 总时间线骨架 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❷</span>
-        <span class="font-bold text-gray-200">总时间线骨架</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-blue-300 mb-2">总背景</h4>
-          <p>这是一个<b>持续失血四百年但没有断掉</b>的文明。不是文明断层，不是废土重启。学校、档案、工程学、委员会、技术传承、地方制度都还存在。</p>
-        </div>
-        <div class="flex items-center gap-4 bg-gray-700/40 rounded-lg p-4">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-red-400">0-20年</div>
-            <div class="text-xs text-gray-400">灾后</div>
-          </div>
-          <div class="flex-1 text-sm">
-            <p class="font-bold text-gray-200">现代国家残骸硬顶期</p>
-            <p class="text-gray-400">不是皇朝阶段。科学家、工程师、实干者、国家机器最后的现代骨架还在。他们普遍活到灾后15到20年左右。</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-4 bg-gray-700/40 rounded-lg p-4">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-orange-400">~83年</div>
-            <div class="text-xs text-gray-400">九帝</div>
-          </div>
-          <div class="flex-1 text-sm">
-            <p class="font-bold text-gray-200">帝系阶段</p>
-            <p class="text-gray-400">灾后15-20年后九帝才真正成形。末帝死于灾后100多年。</p>
-          </div>
-        </div>
-      </div>
-    </details>
-
-    <!-- 3. 一帝许渡 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❸</span>
-        <span class="font-bold text-gray-200">一帝·许渡（止泽帝）·完整整理</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <p><b>本名：</b>许渡</p>
-          <p><b>生时称呼：</b>许公（官面）/ 渡公（灾民、河工——他们感受到的是：他把人往对岸送过去）</p>
-          <p><b>后世正史：</b>止泽帝</p>
-          <p><b>沉痛私传：</b>半世公（扛出来的不是完整旧世界，是半条命）</p>
-          <p><b>年号：</b>续统</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">被推上去的过程</h4>
-          <p>那一代人的目标是救世界，不是建国，不是称帝。一开始很多人各自真做事、各自有账、各自有超凡，这些是散的。后来主动做出一个假总账，让一个人去扛大梁。许渡不是被动捡漏，是被一整代超凡者主动推出去扛的人。当假账往许渡身上压时，前面那些人的超凡会跌落——他们主动把承接位置剥下去。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">前期为什么没有超凡</h4>
-          <p>许渡前期一直故意不让自己的账结算——他一直在做一笔没做完的个人假账。假账没做完就不会结算，所以没有成果、没有能力、没有代价。最开始有避代价的一面，但后来方向变了：不是为了活更久，而是给世界争时间。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">超凡：断</h4>
-          <p>凡是已经开始往后接、往外长、往完整结果去成的东西，到了他这里，大部分都能被断掉。对象包括人、山、河，甚至某种因果。</p>
-          <p class="mt-1"><b>能断：</b>已经开始成形的东西，还带着"后半截"的东西。</p>
-          <p><b>不能断：</b>还没开始的，已经彻底落死的，没有后续可接的。</p>
-          <p><b>性质：</b>不带善恶判断。可能断掉洪水的后半截，也可能断掉某段本来会继续往前走的希望。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">为什么"断"够用</h4>
-          <p>"大泽止步"不是大泽没来，而是它来了、吞了，但没有继续到底。"断"恰好能让继续往后长的那一截没了。不是精准回答了题目，而是碰巧够用。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">为什么死得极惨</h4>
-          <p>他不是把那些东西消灭了，他只是把它们断住了。被断住的东西并不会凭空蒸发。最后，别处没继续往前走的那部分全都堆在他身上。他的死不是普通反噬，更像：他把别的东西都断在外面，最后自己被这些东西反过来断掉。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300 mb-2">历史结算结果形式</h4>
-          <p><b>大泽止步</b>——大泽已经来了，也吞了很多，但最后它停在这里了。这是结果，不是评价。"黄淮未失其治"是后来写进史书给人看的总解释，位置降一级。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 4. 末帝李承晦 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❹</span>
-        <span class="font-bold text-gray-200">末帝·李承晦（两时帝）·完整整理</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <p><b>本名：</b>李承晦（"承"承位承接，"晦"晦暗隐而未显——在将晦未晦之间坐着的人）</p>
-          <p><b>正史：</b>末帝</p>
-          <p><b>知情者私称：</b>两时帝</p>
-          <p><b>更深禁称：</b>裂藏者（收藏家相关线）</p>
-          <p><b>年号：</b>候时（扣住他前半生最重要的动作——等）</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">原初两条核心能力</h4>
-          <p><b>第一能力：看稳定的未来</b>——不是全知，只能看见已经相对成形、闭合、连续的未来线。能看见神州终局，看不真切碎卷海，看不到沉淀百相。</p>
-          <p class="mt-2"><b>第二能力：御极定域</b>——在帝制仍成立的前提下，把中枢范围强行定成"御前秩序"。让皇权现实先服从他所定义。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">转折：未来奏折</h4>
-          <p>一卷奏折突兀出现在御前（不是正常递上来的东西）。他打开一点，看到了<b>时间</b>和<b>御前未批</b>。确认：未来真实存在，未来可以回流，御前接口不只管现在。从此获得<b>两时</b>——第一次真正同时接上"现在"与"未来"两个时层。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">将未来状态定到现在</h4>
-          <p>用"两时"与"御极定域"的结合，将未来神州的状态直接定到现在。不是借未来身，不是单挑更强，是把未来神州的状态直接定到现在。</p>
-          <p class="mt-1"><b>后果：</b></p>
-          <p>① 未来被真正改动，至少收藏家的"既定"未来被打碎了一条缝</p>
-          <p>② 成为收藏家优先更高的藏品，祂的神选遇到末帝时会失控</p>
-          <p>③ 没有欺天楔的现实篡改——比普通假账更高级</p>
-          <p>④ 那段历史无法再被欺天楔改动</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">来到现时</h4>
-          <p>改写完成后本人来到现在时空。这里没有帝制，<b>御极定域完整消失</b>（不是削弱，是没了）。</p>
-          <p class="mt-2"><b>现时看的能力：</b>普通时空只能看唯一一条既定未来线；不稳定时空才能看几种可能；能在沉淀百相中看到一定"沉淀的时间"。</p>
-          <p class="mt-2"><b>现时用的能力：钉一瞬</b>——在一定时间的未来中，钉一瞬到现在，用那个瞬间的状态替换他人或自己的当前状态。普通时空沿唯一线截取；不稳定时空能选几种可能但更难。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 5. 陆执灯 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❺</span>
-        <span class="font-bold text-gray-200">陆执灯·照缝</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-emerald-300 mb-2">能力核心</h4>
-          <p>陆不是"看穿真相"，不是"让假账失效"，更不是"直接改写结果"。</p>
-          <p class="mt-2"><b>第一层·照缝：</b>看见一笔账、一段历史、一个结论里，还没彻底写死的那一道缝。</p>
-          <p><b>第二层·撑缝：</b>不是推翻结论，而是让这一下先别合上，把这道缝短时间撑住。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-emerald-300 mb-2">能照出什么</h4>
-          <p><b>账里的缝：</b>一笔补录还没彻底补平，一个名字还没完全按进去，一份结论快成了但还没落章。</p>
-          <p><b>人里的缝：</b>被写成某个身份但还没完全贴死，死人该被销掉了但还有一点没销干净。</p>
-          <p><b>历史里的缝：</b>表面被解释完了但内里还有一处没压实，一次劳震结果已定但最后承接对象还没闭死。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-emerald-300 mb-2">战斗用法</h4>
-          <p>让动作接不上（第二下接不上）、让伤闭不上（已开的伤口缝被撑住）、让阵势合不拢（合围差半拍）、让"致命结论"晚一步（"现在就死"先别完全合上）。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-emerald-300 mb-2">限制</h4>
-          <p>只能照"本来就有的缝"（不能无中生有）；只能撑不是改（不能把黑写成白）；时间短（越大的账撑开时间越短）。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-emerald-300 mb-2">代价</h4>
-          <p>缝不是白撑的。撑住的东西都会反过来压灯、压眼、压神。长期盯缝会导致：灯越亮自己越看不清"完整的东西"。越来越容易看到裂口，看不到圆满。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-emerald-600">
-          <p class="italic text-emerald-200">「陆执灯没有救陈亦，也没有放陈亦走，它只是把所有人的手都按住了。」</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 6. 二帝沈行之 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❻</span>
-        <span class="font-bold text-gray-200">二帝·沈行之（续命帝）</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <p><b>本名：</b>沈行之（"行"天然带着"继续往下走"）</p>
-          <p><b>正史：</b>续命帝 / <b>民间：</b>接命公 / <b>私传：</b>续尾者</p>
-          <p><b>年号：</b>再行</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-orange-300 mb-2">核心目标</h4>
-          <p>面对一帝留下的断口世界：河断、路断、工断、账断、命断、因果断。那一代的目标不是盛世，而是：续上。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-orange-300 mb-2">超凡：接续</h4>
-          <p>让已经断开的东西续上，也让本来不断、但还没完全长出后半截的东西更快接上。能作用于河、路、命、账、因果。</p>
-          <p class="mt-1"><b>最早神迹：</b>不是断河复流，而是接命。本该断掉的命又被硬接上了。</p>
-          <p><b>不分善恶：</b>好的能被续，坏的也能被续。</p>
-          <p><b>代价：乱接，并且疯长。</b>不该接的也被接上，接上速度太快，错的也往下长。被自己强行接起来的东西反过来把自己接坏了。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <p><b>历史结算结果形式：百断续行</b>——本来断成很多截，最后这些断口被续起来，并且还能继续往下走。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 7. 九帝分期 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❼</span>
-        <span class="font-bold text-gray-200">九帝分期框架</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 text-sm text-gray-300">
-        <div class="space-y-3">
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-red-400 font-bold w-6">一</span>
-            <div><b class="text-red-300">断</b> — 救世界，止大泽</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-orange-400 font-bold w-6">二</span>
-            <div><b class="text-orange-300">接续</b> — 让断口继续往下走</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-yellow-400 font-bold w-6">三</span>
-            <div><b class="text-yellow-300">定承</b> — 开始把"谁来扛"固定下来。有格式，但帝制影响还没大到塑能力本体</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-green-400 font-bold w-6">四</span>
-            <div><b class="text-green-300">成制</b> — 把承接变成可复制、可训练、可制度化的东西。帝制开始成形，但还没反噬全国</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-teal-400 font-bold w-6">五</span>
-            <div><b class="text-teal-300">对冲</b> — 外域与其他稳定势力开始影响神州，神州必须对冲外部成果和压力</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-cyan-400 font-bold w-6">六</span>
-            <div><b class="text-cyan-300">并承</b> — 神州开始往外吞成果、吞解释权、吞承接资格</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-blue-400 font-bold w-6">七</span>
-            <div><b class="text-blue-300">反索</b> — 帝制开始反向索取全国。全国为了让帝制继续有效而主动生产可承接结果</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3">
-            <span class="text-purple-400 font-bold w-6">八</span>
-            <div><b class="text-purple-300">倒写</b> — 先按帝制需要写，再按现实去活。全国已习惯为假账服务，现实开始后补</div>
-          </div>
-          <div class="flex items-start gap-3 bg-gray-700/40 rounded-lg p-3 border-l-2 border-indigo-500">
-            <span class="text-indigo-400 font-bold w-6">末</span>
-            <div><b class="text-indigo-300">两时</b> — 改未来，来到现时（见第四部分）</div>
-          </div>
-        </div>
-        <div class="mt-4 bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-gray-200 mb-2">关键区分</h4>
-          <p>一到二帝：救世界延续，拿人去扛账。三到四帝：帝制雏形，人仍主导。五到六帝：神州稳定成体系，帝制和世界互相喂养。七到八帝：<b>帝制成了默认真实</b>，全国反过来替帝制生产可承接结果——不是皇帝带着全国做假账，而是为了让帝制继续成立，全国主动生产可被帝制承接的结果。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 8. 陈亦/沈怀超凡体系 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❽</span>
-        <span class="font-bold text-gray-200">陈亦/沈怀·超凡体系（墨未干→补痕→候）</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-violet-300 mb-2">墨未干（沈怀原有）</h4>
-          <p>来自水衡司录房录事位置。一笔账只要还没有彻底入册、封存、归档、结清，在沈怀眼里就像墨还没干。</p>
-          <p class="mt-1"><b>能做：</b>察觉哪页被动过，哪个名字和账气不贴，某个超凡背后的账口正在泛动。能轻轻拨一下未干之处，但只能轻拨不能改写。</p>
-          <p><b>代价：</b>录房低位病。体弱、胸冷、药味重、墨气入肺、潮气入身。</p>
-          <p class="text-gray-400 italic">一句话：墨未干让他知道哪里还能碰。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-violet-300 mb-2">补痕（陈亦新长出）</h4>
-          <p>由三件东西撞出来：沈怀原有的墨未干 + 绝墨落子擦断账线留下的断痕 + 陈亦对"账落错人"的特殊敏感。</p>
-          <p class="mt-1"><b>本质：</b>顺着现在留下的一道痕，让它继续长出它本来指向的账面结果。痕是起点，补痕让痕继续往前长。</p>
-          <p class="mt-1"><b>能做：</b>顺着痕迹补出被遮住的账面关系；让旧关系重新被读取；维持沈怀身份的部分连续性。</p>
-          <p><b>不能做：</b>封禁别人、改未来、凭空造事实、补没有痕迹的东西、治好身体病根。必须依赖已有痕迹。</p>
-          <p><b>代价：</b>那段账会先压在陈亦身上——补水痕像重新进水，补印痕胸口承余损，补工牌手腕像被河底拖住。</p>
-          <p class="text-gray-400 italic">一句话：补痕让痕继续往前长。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-violet-300 mb-2">绝墨落子</h4>
-          <p>不是陈亦主动拥有的超凡，而是一次外来擦账事件。擦掉了沈怀继续承受余损的账面连接，但没有擦掉身体已经承受余损后留下的病根。绝墨擦账，不擦伤。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-violet-300 mb-2">候（卷末触发）</h4>
-          <p>卷末大改淮假账要被历史（账）结算成历史事实时，补痕挡不住。于是绝墨最后一次大发力，直接擦掉关键账项，使历史（账）没有落成、没有被纠正、也没有回到真账——它悬住了。</p>
-          <p class="mt-1"><b>本质：</b>在结果即将落成时，让它暂不落。能让印未落、账未合、名未归、死未定、功未入。</p>
-          <p><b>与补痕区别：</b>补痕是有痕让痕继续长；候是有结果要落让结果暂不落。补痕是顺痕续前，候是临落悬前。</p>
-          <p class="text-gray-400 italic">三者共生：墨未干看湿，补痕续痕，候悬账。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 9. 奉玺派与大改淮 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❾</span>
-        <span class="font-bold text-gray-200">奉玺派与大改淮·派系人物</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-yellow-300 mb-2">奉玺派核心修订</h4>
-          <p>奉玺派要的不是玺本身承功。它要的是：在没有真正帝制的神州里，仍然借"皇帝名分"来承功。玺、九鼎御批、治水玺这些东西只是接口，本体是皇帝名分。</p>
-          <p class="mt-2"><b>末帝三百年前真正留下的暗示：</b>不是"某个名器能承功"，而是即便帝制不在，皇帝名分仍可承功。</p>
-          <p class="mt-2 italic text-yellow-200">「国朝虽无临御之帝，皇帝名分未绝。大水之功，不可归一臣。功入御名，诸臣奉行。玺下有位，人皆在位下。」</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-yellow-300 mb-2">五派人物定版</h4>
-          <div class="space-y-2 mt-2">
-            <p><b class="text-red-300">承功派·裴玄纪</b>（水衡司右都水使）— 真名承功</p>
-            <p><b class="text-yellow-300">奉玺派·顾廷璋</b>（尚宝司卿）— 皇帝名分承功</p>
-            <p><b class="text-green-300">分功派·沈确</b>（都察院右佥都御史）— 拆功给诸司</p>
-            <p><b class="text-purple-300">中立派·姚观澜</b>（通政司右通政）— 看哪套能活到最后</p>
-            <p><b class="text-gray-300">清册线·杜衡</b>（水衡司经历司主簿）— 清底册洗盘子</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-yellow-300 mb-2">一句话区分</h4>
-          <p>承功派要裴玄纪承；分功派要拆开承；奉玺派要让一个没有皇帝的帝国，继续用皇帝名分承功。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 10. 谢观成定水线 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❿</span>
-        <span class="font-bold text-gray-200">谢观成·定水线上限</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-sky-300 mb-2">上限不用水量定</h4>
-          <p>上限不能用"挡多大水"来定，那样会变成战力表。上限是：<b>他能划线，但不能决定线后面的归属。</b></p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-sky-300 mb-2">能做什么/不能做什么</h4>
-          <p>能挡水势，不能消灭水灾。水会从两侧绕、前方抬高、往地下压、往别处决。他挡得越强，转移出去的水势越凶。<b>不能画闭环</b>（一旦试图闭合，线会回咬他自己）。</p>
-          <p class="mt-1">参考感觉：小渠能等人说完一句话；洪水只能等人把孩子扔过线；大灾只等一个眼神。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-sky-300 mb-2">代价</h4>
-          <p>普通使用：手指冷，皮肤有水线。重用：半边身体干半边湿，知觉分裂。灾级：身体被分成线内线外。</p>
-          <p class="mt-1"><b>最狠终局：</b>他还站着，但别人从他左边喊他右边听不见，因为那条线已经穿过他。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-sky-600">
-          <p class="italic text-sky-200">「谢观成能挡大灾的一线，不能平大灾的一局。他能让水承认一条边界，但他不能决定边界之外淹死谁。」</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 11. 超凡者死后规则 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">⓫</span>
-        <span class="font-bold text-gray-200">超凡者死后规则</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-gray-200 mb-2">常规规则</h4>
-          <p>人死后不会爆装备。尸体不会自动变法器。能力属于活着时的承接结构，死亡后大多断开。死后留下的是"痕"，不是"能"。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-gray-200 mb-2">三类残留</h4>
-          <p><b>① 病理遗痕：</b>代价在身体上留下的物理痕迹。是证据，不是装备。</p>
-          <p><b>② 经手遗痕：</b>长期使用过的物件沾上的使用痕迹。可以被墨未干、补痕读取线索，但不能稳定施展能力。</p>
-          <p><b>③ 未闭合残口：</b>最危险。死亡时账没完全闭合留下的残口。碰它的人可能得到线索，也可能被旧账卷进去。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-gray-200 mb-2">尸体超凡使用</h4>
-          <p>不存在成熟职业。极少数超凡者的能力方向可能恰好适配尸体残留——借来的只是残影，不是完整能力。使用后必然沾染死者旧代价，借得越多使用者越不像活人。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-gray-500">
-          <p class="italic text-gray-200">「人死了，能也就散了。」<br>「散不干净呢？」<br>「那叫残账。」<br>「能用？」<br>「看命。也看谁先找到那个命不好的人。」</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 12. 第十五章写作补丁 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">⓬</span>
-        <span class="font-bold text-gray-200">第十五章写作补丁</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-pink-300 mb-2">三点修改原则</h4>
-          <p>① 删"这里不能问了"（太像作者强行转场，曹留直接做事不解释）</p>
-          <p>② 陈亦心理加乐子感（冷幽默观察，很轻藏在心理里）</p>
-          <p>③ 曹留超凡不要"压声"，改为听声/截声/定声</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-pink-300 mb-2">曹留超凡定向：听声、截声、定声</h4>
-          <p><b>听声辨真：</b>从声音里听出断续。适合查人。</p>
-          <p><b>截声：</b>削掉声音节奏，对方动作慢半拍。不是封禁，是接不上节奏。</p>
-          <p><b>回声定位：</b>不用看也能知道屋里谁听见了什么。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-pink-300 mb-2">陈亦乐子感写法示例</h4>
-          <p class="italic text-gray-400">「陈亦很想反问一句：你看我像知道的样子吗？他忍住了。人在别人屋檐下，尤其这屋檐还归水衡司管，嘴欠是一种很快见效的死法。」</p>
-          <p class="italic text-gray-400 mt-2">「他身上现在东西够多了，沈怀的旧伤，水里的冷，胸口那点牵扯，还有一只至今装死的小陶瓶。再多一个会自己接东西的，他都想找水衡司申请加俸。」</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-pink-300 mb-2">废纸库</h4>
-          <p>地点改为废纸库（不用旧晾纸房）。试"死过、废过、断过、残过的纸"。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 白皮书口径 -->
-    <details class="bg-gray-800/60 rounded-xl border border-indigo-600/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">📋</span>
-        <span class="font-bold text-indigo-300">白皮书口径·完整版</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4 leading-relaxed space-y-3">
-          <p>账（历史本身）是盲目的结果主义，不认科技，只认超额结果，因此第一批科学家工程师实干者死得快。楔的本质是做假账——通过重新写进过程、解释、承接者，把真账改写成假账，假账没定稿历史（账）就不结算；没结算就没有成果、能力和代价。如果真账已先结算，再动楔就是抢已结算结果，难度来自原承接者和既得利益链，若没人反对则没有阻力。账的代价本质是能力不属于自身的排异，地脉鸣冤者不被账影响，其余旧日力量获得者受账影响较小。</p>
-          <p>时间线上：灾后前15到20年是现代国家残骸硬顶期，不是皇朝阶段；此后九帝共约83年，末帝死于灾后100多年。这是一个持续失血四百年但没有断掉的文明。</p>
-          <p>一帝许渡这一代最朴素的目标是救世界。后来那一代人主动做出假总账，把许渡推上去。历史结算出的结果形式是"大泽止步"。许渡前期没有超凡，最后三四年才长出"断"。他死得极惨——被断住的东西反过来断掉他。</p>
-          <p>末帝李承晦原本有看稳定未来和御极定域两条核心能力。一卷奏折出现后获得两时，将未来状态定到现在，触发没有欺天楔的现实篡改。来到现时后御极定域消失，残存"钉一瞬"能力。</p>
-          <p>陆执灯能力是照缝和撑缝——照出未写死的缝并短暂撑住，不能无中生有。代价是越来越只能看到裂口。</p>
-          <p>陈亦/沈怀超凡三层共生：墨未干看湿，补痕续痕，候悬账。</p>
-        </div>
-      </div>
-    </details>
-
-  </div>
-</div>
-<!-- Tab: Notes -->
-<div id="tab-notes" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="max-w-4xl mx-auto">
-    <div id="notesContainer" class="space-y-4"></div>
-    <div class="mt-6">
-      <button onclick="addNote()" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm rounded-lg transition border border-indigo-600/30">+ 添加笔记</button>
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Wanliu (万流名册) -->
-<div id="tab-wanliu" class="tab-content hidden max-w-7xl mx-auto px-4 py-8">
-  <div class="max-w-5xl mx-auto space-y-4">
-
-    <div class="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4 mb-6">
-      <p class="text-gray-200 font-bold text-lg mb-1">🌌 万流名册 · 世界观终极全景设定</p>
-      <p class="text-gray-400 text-sm">《人间仍存》（代称：人间仍存）的上层宇宙。核心概念：盲目织史者 · 绝墨空祖 · 劳震结册 · 溢名肉溃</p>
-      <p class="text-gray-500 text-xs mt-2">点击各部分标题展开/折叠</p>
-    </div>
-
-    <!-- 1. 序章：废土的基本问题 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❶</span>
-        <span class="font-bold text-gray-200">序章：废土的基本问题</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4 italic leading-relaxed">
-          <p>废土上所有的政治、所有的战争、所有的组织与反抗，归根结底都是同一个问题的不同答案：</p>
-          <p class="text-white font-bold mt-2 text-base">账要有人背。谁来背？</p>
-          <p class="mt-2">门阀说我来背，但我要从你身上拿走足够多的东西。旧日信徒说直接向神明献祭更有效率。隐秘组织说账本本身是问题所在。反抗军说这笔账从一开始就不应该存在。</p>
-          <p class="mt-3">没有一个答案是错的，也没有一个答案是完整的。</p>
-          <p class="mt-3">但在这所有的问答之上，有一个问题从来没有人提出过：</p>
-          <p class="text-indigo-300 font-bold mt-1">如果这场挣扎本身，才是最值得被收藏的东西，那么它终将以什么方式结束？</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 2. 宇宙常数体系 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❷</span>
-        <span class="font-bold text-gray-200">宇宙常数体系</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">两大至高常数的死锁</h4>
-          <p><b class="text-amber-200">常数A——盲目织史者（神州俗称：盲冥大账）：</b>无限的记录、格式化与因果具象化。主神智在亿万年前永久盲目挂机，溢散的未完成历史化作星云，笼罩废土。</p>
-          <p class="mt-2"><b class="text-amber-200">常数B——绝墨空祖（虚妄盲白）：</b>绝对的空无、擦除与无意义化。比虚空更早存在的原初留白。被强行赋予形体后碎裂，密度最高区域形成白忘原。</p>
-          <p class="mt-2">两者交汇时发生恐怖套娃：A试图记录B，B瞬间擦除A的墨迹，A再度记录擦除行为，B再度格式化——永远无法终止的死循环，双向退化。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">干涉界面体系</h4>
-          <div class="space-y-2">
-            <p><b class="text-red-300">欺天楔（历史结算系专属）：</b>篡改历史结算。三级：甲级完型器（效率极高但20年内溃变）、乙级碎型器（功能残缺）、丙级骨型器（从溃变者尸骸萃取，叠加前任债务）。</p>
-            <p><b class="text-blue-300">共鸣载体（信息-认知系）：</b>向旧日发送信号，在响应瞬间截获。代价是同化。</p>
-            <p><b class="text-green-300">献质契（生命-物质系）：</b>向旧日呈上祭品，截获辐射转化为可用形态。代价是等价执行。</p>
-            <p><b class="text-orange-300">兵燹契（暴力-结构系）：</b>唯一方式是直接承接——站在毁灭中心，用肉身作为结构化能量落点。代价是字面执行。</p>
-            <p><b class="text-gray-400">不可干涉系：</b>绝墨空祖（因果关联被排斥）、沉默收藏者（任何干涉行为被永久封存）。</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">沉默收藏者——俯瞰八尊</h4>
-          <p>祂代表终止——不是死亡，是完美的、永恒的、无法被改变的绝对静止。收藏对象是宇宙中独一无二、不可复制的状态。</p>
-          <p class="mt-2"><b>一挑八：</b>当废土所有矛盾、冲突、挣扎同时达到最极端但还没彻底崩溃——那一瞬间，整个废土就是一件完美的藏品。祂会一次性封存整个太阳系破裂纪元。</p>
-          <p class="mt-2">废土的终结不会是战争，不会是惊蛰大清算。废土的终结，是沉默收藏者伸出手，将一切封存在琥珀切面里。一切都停在最激烈的瞬间，永恒。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">神选体系</h4>
-          <p>神选不是奖励，是物理过程——旧日法则穿透人时，与个人历史、执念、恐惧交叉，决定具体形态。两个经历同一种神选的人，失去的维度相同，具体方式不同。</p>
-          <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
-            <p><b class="text-gray-200">定格者</b>（收藏者神选）：失去对过程的感知</p>
-            <p><b class="text-gray-200">战场</b>（无休兵戈神选）：失去对意志的感知</p>
-            <p><b class="text-gray-200">边界者</b>（复苏之巢神选）：失去自我与母巢边界</p>
-            <p><b class="text-gray-200">节点</b>（千目千言神选）：失去单一视角归属</p>
-            <p><b class="text-gray-200">真相</b>（盲目空蝉神选）：失去自我欺骗能力</p>
-            <p><b class="text-gray-200">终物</b>（沉淀百相神选）：失去对变化的期待</p>
-            <p><b class="text-gray-200">全时</b>（千裂视界神选）：失去时间线连续性</p>
-          </div>
-        </div>
-      </div>
-    </details>
-
-    <!-- 3. 废土核心运转机制 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❸</span>
-        <span class="font-bold text-gray-200">废土核心运转机制</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">劳震</h4>
-          <p>成千上万人朝同一目标高强度协作时，产生的协作动能引发概念空间红移，强行触发历史的自动结算机制。</p>
-          <p class="mt-2"><b>核心是绝望浓度</b>——被迫在绝境中协作的人贡献的概念动能，是心甘情愿者的<b>十七倍</b>。门阀对底层的极限压榨，在神秘学层面是经过精密校准的绝望收割工程。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">因果篡夺（做假账）</h4>
-          <p>通过欺天楔，将底层流血牺牲换来的历史终点，强行批红归于自己名下。</p>
-          <p class="mt-2">历史从未被欺骗。每一笔假账背后真正的劳动者，记录里都有痕迹。只是结算机制不区分署名——对盲目结果主义而言，谁做了不重要，重要的是这件事发生了。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">溢名肉溃（三阶段）</h4>
-          <p><b>初溃期：</b>表层皮肤异变，神迹力量反而峰值，最危险。</p>
-          <p><b>深溃期：</b>异变蔓延至内脏，感知扭曲，无法区分自己意志与盲目织史者的指令。</p>
-          <p><b>终溃期：</b>意识融入账目，肉身最终形态固化。仍然保有残余意识，持续影响周边因果结算。</p>
-          <p class="mt-2 text-gray-400">溃变形态与役震性质相关——铜蜕是冶炼成本，汞变是治水成本，脂化是歌声的成本。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">死账荒白</h4>
-          <p>区域历史因果被过度榨取后，彻底失去流动性，沦为枯竭死地。积累到规模后与绝墨空祖碎屑共鸣——荒白回潮，开始主动吸收消解周边历史记录。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-cyan-300 mb-2">账目遗产</h4>
-          <p>高位者在溃变完成前暴毙，未竟的因果债务自动转移给因果关联最深的存活者。民间俗称：<b>背锅上位</b>。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 4. 时间、历史与人文内核 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❹</span>
-        <span class="font-bold text-gray-200">时间、历史与人文内核</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-purple-300 mb-2">纪年体系</h4>
-          <div class="space-y-1">
-            <p><b>太阳系破裂纪元</b>：官方纪年，约420年</p>
-            <p><b>黄铜历</b>：铁锈工坊，约391年</p>
-            <p><b>水衡纪</b>：神州大泽，约287年</p>
-            <p><b>白日历</b>：白忘原，只有"今天是第几天"</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-purple-300 mb-2">创世正直期</h4>
-          <p>账目文明最初建立者是一群真正自愿替万民承担因果重量的人。核心信条刻在初账残卷扉页上：</p>
-          <p class="text-white font-bold text-base mt-2">账要有人背。我来。</p>
-          <p class="mt-2">正账者溃变前永远把欺天楔制作方法教给下一个人：「这东西是用来保护人的，不是用来占人便宜的。你背的是账，不是人上面的位子。」</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-purple-300 mb-2">三代腐变模型</h4>
-          <p><b class="text-green-300">第一代（殉道者）：</b>亲历过灾难，真正理解恐惧，背账是因为亲眼看见不背的后果。</p>
-          <p><b class="text-yellow-300">第二代（管理者）：</b>没亲历过，开始思考效率。被保护的人被当作生产因果的原料管理。不是坏人，只是用管理资源的方式管理人命。</p>
-          <p><b class="text-red-300">第三代（门阀）：</b>灾难只是课本段落。驱动力从"我必须承担"转变为"我理应获得"。一个字的差距，是文明腐败的全部本质。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-purple-300 mb-2">清账者</h4>
-          <p>知道自己在做、知道是错的、试图改变、承担全部后果。</p>
-          <div class="mt-2 space-y-1 text-xs">
-            <p>• <b>卢修斯·铁手</b>：唯一主动削减大勋作规模的执政官，弹劾前夜独自承接无楔劳震，终溃为闭眼黄铜雕像</p>
-            <p>• <b>无名修女</b>：十一年站在唱诗班孩童前方，脂化蔓延至腰部。「我没有救任何人。但我每次都站在他们前面。」</p>
-            <p>• <b>寒铁</b>：系统性伪造更低死亡数字，23年间接避免约四万人过劳死亡。被处决。「我以为算得出来就有责任。」</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-indigo-500">
-          <h4 class="font-bold text-indigo-300 mb-2">人文核心</h4>
-          <p class="italic">没有任何神明在等待人类做出正确的选择。在这个世界里，做一个好人，在神秘学层面毫无意义。</p>
-          <p class="mt-2">但沉默收藏者恰恰因为这些行为的纯粹、独一无二、不可复制——视之为最珍贵的藏品。</p>
-          <p class="mt-2 font-bold text-indigo-200">你越不需要被认可，就越被注视。你越纯粹，就越接近被封存。</p>
-          <p class="mt-2">但有一件事收藏者永远无法收藏：那封没有送达的信——指向具体接收者的意图。不是为了永恒，是为了一个具体的、当下的、也许根本不存在的人。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 5. 九大地域 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❺</span>
-        <span class="font-bold text-gray-200">九大地域</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-3 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-orange-500">
-          <h4 class="font-bold text-orange-300">❶ 铁锈工坊（环地中海区）</h4>
-          <p>旧日：<span class="text-orange-200">无休兵戈</span> ｜ 役震：大勋作 ｜ 界面：领地大印（欺天楔） ｜ 溃变：铜蜕（金属化） ｜ 死地：废炉</p>
-          <p class="text-gray-400 mt-1">古罗马元老院×重工业黄铜蒸汽。元老院账目崩溃，三任执政官深溃。因果方舟计划：载客60万，总人口470万。底层顺口溜：造船的进船，出大工的填海。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-blue-500">
-          <h4 class="font-bold text-blue-300">❷ 极北冰原区（重工业机器）</h4>
-          <p>旧日：<span class="text-blue-200">千目千言</span> ｜ 役震：大熔炼 ｜ 界面：授权徽章（共鸣载体） ｜ 溃变：寒解（五脏生铁屑） ｜ 死地：冷停机区</p>
-          <p class="text-gray-400 mt-1">常任委员会。无名字只有编号，无家庭只有工作单位。蜂群是操作系统。催眠效果约40年后失效。父母给孩子一个委员会编号+一个永远不会入档的真名。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-green-500">
-          <h4 class="font-bold text-green-300">❸ 青绿大坞（太阳露台区）</h4>
-          <p>旧日：<span class="text-green-200">复苏之巢</span> ｜ 役震：万民地翻 ｜ 界面：天车轮盘（献质契） ｜ 溃变：木化（碳化枯死） ｜ 死地：绝户地</p>
-          <p class="text-gray-400 mt-1">巨型梯田与黑曜石祭坛。大坞主联盟与肉体繁衍母巢互相绞杀。终溃供奉为树神信仰——谎言，他们是清醒的，他们无法死去。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-purple-500">
-          <h4 class="font-bold text-purple-300">❹ 天国圣座（白银穹顶区）</h4>
-          <p>旧日：<span class="text-purple-200">盲目空蝉</span> ｜ 役震：和声圣震 ｜ 界面：圣骨金匣（共鸣载体） ｜ 溃变：脂化（化为香蜡） ｜ 死地：静默教区</p>
-          <p class="text-gray-400 mt-1">唯一把神秘学完整包装成宗教教义的统治。溃变越深的主教越神圣——香气是圣恩证明。枢机处是穹顶，空蝉修道院是地基。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-yellow-500">
-          <h4 class="font-bold text-yellow-300">❺ 极西砂海（无生绿洲）</h4>
-          <p>旧日：<span class="text-yellow-200">沉淀百相</span> ｜ 役震：万骨沙震 ｜ 界面：黄金血契（献质契） ｜ 溃变：沙化 ｜ 死地：流沙冢</p>
-          <p class="text-gray-400 mt-1">浮台在流沙上悬停，需要燃料（沙震需要人死在流沙里），没有出口的循环。背债银号从门阀内部诞生，反过来控制门阀。台肚住两万人掌握维修技术。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-red-500 border-2">
-          <h4 class="font-bold text-red-300">❻ 神州水衡司（龙骨大泽区）</h4>
-          <p class="text-red-200 font-bold">← 《人间仍存》发生地</p>
-          <p>旧日：<span class="text-red-200">盲冥大账（直接投影）</span> ｜ 役震：大水役 ｜ 界面：九鼎御批（欺天楔） ｜ 溃变：汞变解（泥塑化） ｜ 死地：断流荒</p>
-          <p class="text-gray-400 mt-1">三百年前朝廷崩溃，末代皇帝凝固进断流荒。考功印需治水大夫本人血液+流域河水激活。各主干堤坝布满石像生，每座表情不同：下游住着他们最后保护的人。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-cyan-500">
-          <h4 class="font-bold text-cyan-300">❻↓ 碎卷海（江河废墟）</h4>
-          <p>旧日：<span class="text-cyan-200">千裂视界</span> ｜ 役震：响动 ｜ 界面：碎戳子（欺天楔残缺变体） ｜ 溃变：冤账迸骨 ｜ 死地：灰坑</p>
-          <p class="text-gray-400 mt-1">不是地域是伤口。不同时间线同一片土地压缩在同一空间坐标。六种动词时态。常用问候：你今天在几条线上？</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-gray-400">
-          <h4 class="font-bold text-gray-300">❼ 白忘原（域外异境）</h4>
-          <p>旧日：<span class="text-gray-200">绝墨空祖（残骸渗土）</span> ｜ 役震：无 ｜ 界面：无 ｜ 死地：全域皆是</p>
-          <p class="text-gray-400 mt-1">居民每30天失去全部记忆。清空在清醒时发生。这一天叫"白日"。刻身文化（皮肤刻符号）、前信文化（写信给下一个周期的自己）。「爱一个人，不需要记住他。」</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-3 border-l-4 border-pink-500">
-          <h4 class="font-bold text-pink-300">❽ 绝响原（终末隔离区）</h4>
-          <p>旧日：<span class="text-pink-200">沉默收藏者</span> ｜ 役震：广陵役震 ｜ 界面：断弦琴（触发器非控制器） ｜ 溃变：彩色外壳化 ｜ 死地：琥珀之城</p>
-          <p class="text-gray-400 mt-1">第一个被局部收藏的地域。两个聚居点已完全琥珀化。断弦琴不是他们在使用收藏者——是收藏者在使用他们校准收藏精度。创作越好越接近被永久封存。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 6. 势力与组织体系 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❻</span>
-        <span class="font-bold text-gray-200">势力与组织体系</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">四大隐秘组织</h4>
-          <div class="space-y-3">
-            <p><b class="text-red-300">匿痕无缝社</b>：代价是一段你愿意放弃的历史。用白墙粉擦除病变记录，那段历史也从所有人记忆和账目上消失。负责整理其档案的研究员——没有人记得他是什么时候加入委员会的。</p>
-            <p><b class="text-yellow-300">背债银号</b>：不是一个组织，是一个行业。本质只有一件事：把即将到来的溃变卖给不知情的人。委员会定性：暂不处理。便条：暂不处理的意思是我们也不知道它消失会发生什么。</p>
-            <p><b class="text-blue-300">彻查终局派</b>：追求空账——一本没有未结清条目的账本。不是虚无主义者。「区别只是我们要推迟，他们要提前。」</p>
-            <p><b class="text-purple-300">骨鸣知行会</b>：创始人是一具骨头——冤账迸骨的声音。核心信条：<b>大账可以被改，骨头不会撒谎。</b></p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">边缘不合流途径</h4>
-          <div class="space-y-3">
-            <p><b class="text-green-300">彻行者</b>：不用欺天楔，用凡人血肉硬顶。最终碑化——意识以正常速度的百万分之一运转。三百年石碑只经历三年主观时间。一个彻行者的碑基：「如果有人能听见，告诉我外面怎么样了。我会在里面等。我有的是时间。」</p>
-            <p><b class="text-gray-300">朱批客</b>：只在账本缝隙里偷取寿命。纯粹派（我不欠这个世界眼泪）vs 干涉派（账本里应该有些不那么冷的东西）。</p>
-            <p><b class="text-red-300">地脉鸣冤者</b>：极端科学家与无神论反抗军，拉起绝对唯物结界，超凡全失效。代价是取消所有治愈神迹。「我们是用脏手做干净的事。但总得有人做。」</p>
-            <p><b class="text-indigo-300">绝迹者</b>：体内融合绝墨碎屑，把盲白死页扔进结算因果，局部重演常数对撞。终局：什么都没有。「我们不是来赢的。我们是来让它变得没有意义的。」</p>
-          </div>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-amber-300 mb-2">审计委员会</h4>
-          <p>比大多数统治机构都古老。没有军队、没有欺天楔。权力来自信息垄断和因果中立性。</p>
-          <p class="mt-1"><b>核算派：</b>记录不是改变。 <b>干涉派：</b>只记录不干涉就是默许。 <b>第三条路：</b>在档案边角写下本不该被记录的东西。</p>
-          <p class="mt-2 italic text-gray-400">聆冤录传统：研究员退休最后一天，在安静档案室里，用一小时把最重要的那段骨鸣用自己的声音朗读一遍。不是给任何人听，不是被录制。只是一个人把一段本来会永远沉默的声音，用活着的人类声音，再说一遍。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 7. 惊蛰大清算 -->
-    <details class="bg-gray-800/60 rounded-xl border border-gray-700/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❼</span>
-        <span class="font-bold text-gray-200">惊蛰大清算</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4 border-l-4 border-red-600">
-          <p class="text-red-300 font-bold">最高机密 · 泄露片段拼凑</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300">第一阶段：苏醒先兆</h4>
-          <p>盲目织史者主神智苏醒。没有戏剧性物理前兆。最初的迹象是技术性的：欺天楔开始失效。从边缘开始，从溃变最深者开始。历史的结算机制开始拒绝假账，但没有立即清算。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300">第二阶段：全面结算</h4>
-          <p>所有欺天楔维持的神迹同时崩溃，所有延缓的溃变同时全速恢复。废土上所有门阀、统治者、欺天楔持有者，在同一时间窗口内进入终溃。对历史而言：例行期末对账。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300">第三阶段：格式化爆破</h4>
-          <p>高位者同时终溃，役震承接结构崩溃。未承接的劳震发生格式化爆破，将工人融合成历史肉山，时空塌陷为死账荒白。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-red-300">第四阶段：未知</h4>
-          <p class="text-gray-400">描述超出预测能力。</p>
-          <p class="mt-2">但有一条补充：如果废土在清算前已达到沉默收藏者认为值得封存的成熟度——清算可能永远不会发生。藏品会在清算降临瞬间被封存，盲目织史者苏醒成为藏品最后定格画面之一。</p>
-        </div>
-      </div>
-    </details>
-
-    <!-- 8. 主角设定 -->
-    <details class="bg-gray-800/60 rounded-xl border border-indigo-600/50 group">
-      <summary class="p-4 cursor-pointer hover:bg-gray-700/30 rounded-xl flex items-center gap-3 transition">
-        <span class="text-indigo-400 text-lg">❽</span>
-        <span class="font-bold text-indigo-300">主角设定</span>
-        <span class="ml-auto text-gray-500 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="px-4 pb-4 space-y-4 text-sm text-gray-300">
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-indigo-300 mb-2">他是谁</h4>
-          <p>来自另一个地球。名字在历史记录上留下半秒钟墨迹后被绝墨碎屑侵蚀消失——他在账目上是一个持续移动的空白。在那里他是做数字的人。</p>
-          <p class="mt-2">被盲目织史者抓取那一刻，正处于一种深夜独自工作时关于意义的茫然。敲下最后一个结算确认键，然后消失了。</p>
-        </div>
-        <div class="bg-gray-700/40 rounded-lg p-4">
-          <h4 class="font-bold text-indigo-300 mb-2">核心能力</h4>
-          <p>没有任何超凡能力。有的是一套废土上从来没人用过的思维框架：<b>复式记账法</b>。</p>
-          <p class="mt-2">废土门阀做假账只有两种：抹除（五改成零）和转移（债务挂到别人名下），都是单式记账逻辑。</p>
-          <p class="mt-2">他带来的是：任何变动必须同时在两个方向上发生，借方和贷方，变动必须相等，账目必须平衡。</p>
-          <p class="mt-2 text-gray-400"><b>限制：</b>需要时间理解因果结构；依赖历史的盲目运作（盲目织史者苏醒后全部失效）；不产生任何神迹——不能移山填海，只能在因果账目层面为特定的人争取时间。</p>
-          <p class="mt-2">废土上最没有战斗力的存在之一，也是唯一一个能让历史的结算在局部暂缓的人。</p>
-        </div>
-      </div>
-    </details>
-
-  </div>
-</div>
-
-
-<!-- Toast container -->
-<div id="toastContainer"></div>
+<main style="max-width:1200px;margin:0 auto;padding:16px">
+  <div id="panel-overview" class="tab-panel active"></div>
+  <div id="panel-chapters" class="tab-panel"></div>
+  <div id="panel-characters" class="tab-panel"></div>
+  <div id="panel-relations" class="tab-panel"></div>
+  <div id="panel-world" class="tab-panel"></div>
+  <div id="panel-outline" class="tab-panel"></div>
+  <div id="panel-patches" class="tab-panel"></div>
+</main>
 
 <script>
-const LS_KEYS = { chapters: 'cz_chapters', analysis: 'cz_analysis', notes: 'cz_notes', outline: 'cz_outline', worldbuilding: 'cz_worldbuilding', patches: 'cz_patches' };
-let chaptersData = [];
-let analysisData = { characters: [], relationships: [], worldSettings: [], timeline: [] };
-let notesData = [];
-let outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
-let worldbuildingData = { factions: '', abilities: [], locations: [], rules: [] };
-let patchesData = { patches: [], todos: [], versions: [] };
-let selectedChapter = 0;
-let chartInstance = null;
+let chaptersData=[],analysisData={},currentChapter=1,chartInstance=null;
 
-function toast(msg, type='success') {
-  const el = document.createElement('div');
-  el.className = 'toast';
-  el.style.background = type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#6366f1';
-  el.textContent = msg;
-  document.getElementById('toastContainer').appendChild(el);
-  setTimeout(() => el.remove(), 2500);
-}
-
-function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
-function load(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
-
-async function initData() {
-  const savedChapters = load(LS_KEYS.chapters);
-  const savedAnalysis = load(LS_KEYS.analysis);
-  const savedNotes = load(LS_KEYS.notes);
-  const savedWorldbuilding = load(LS_KEYS.worldbuilding);
-  const savedPatches = load(LS_KEYS.patches);
-
-  if (savedChapters && savedAnalysis) {
-    chaptersData = savedChapters;
-    analysisData = savedAnalysis;
-    notesData = savedNotes || [];
-    worldbuildingData = savedWorldbuilding || getDefaultWorldbuilding();
-    patchesData = savedPatches || getDefaultPatches();
-  } else {
-    try {
-      const [chRes, anRes] = await Promise.all([
-        fetch('data/chapters.json'),
-        fetch('data/analysis.json')
-      ]);
-      chaptersData = await chRes.json();
-      analysisData = await anRes.json();
-      notesData = [];
-      worldbuildingData = getDefaultWorldbuilding();
-      patchesData = getDefaultPatches();
-      save(LS_KEYS.chapters, chaptersData);
-      save(LS_KEYS.analysis, analysisData);
-      save(LS_KEYS.notes, notesData);
-      save(LS_KEYS.worldbuilding, worldbuildingData);
-      save(LS_KEYS.patches, patchesData);
-    } catch (e) {
-      console.error('Failed to load data:', e);
-      toast('数据加载失败', 'error');
-    }
-  }
+async function loadData(){
+  const [chRes,anRes]=await Promise.all([
+    fetch('data/chapters.json'),fetch('data/analysis.json')
+  ]);
+  chaptersData=await chRes.json();
+  analysisData=await anRes.json();
   renderAll();
 }
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById('tab-' + tab).classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('tab-active');
-    btn.classList.add('tab-inactive');
-    if (btn.dataset.tab === tab) {
-      btn.classList.add('tab-active');
-      btn.classList.remove('tab-inactive');
-    }
-  });
-  if (tab === 'overview') renderOverview();
-  if (tab === 'relations') renderRelationGraph();
-}
-
-function renderAll() {
+function renderAll(){
   renderOverview();
-  renderChapterList();
+  renderChapters();
   renderCharacters();
   renderRelations();
-  renderWorldSettings();
-  renderTimeline();
-  renderNotes();
+  renderWorld();
   renderOutline();
-  renderWorldbuilding();
   renderPatches();
-  if (chaptersData.length > 0) selectChapter(0);
 }
 
-// ===== OVERVIEW =====
-function renderOverview() {
-  const totalChars = chaptersData.reduce((s, c) => s + (c.chars_with_punct || 0), 0);
-  const avgChars = chaptersData.length ? Math.round(totalChars / chaptersData.length) : 0;
-  const longest = chaptersData.reduce((a, b) => (a.chars_with_punct||0) > (b.chars_with_punct||0) ? a : b, chaptersData[0]);
-  const shortest = chaptersData.reduce((a, b) => (a.chars_with_punct||0) < (b.chars_with_punct||0) ? a : b, chaptersData[0]);
+function renderOverview(){
+  const panel=document.getElementById('panel-overview');
+  const totalChars=chaptersData.slice(1).reduce((s,c)=>s+c.chars_with_punct,0);
+  const chapterCount=chaptersData.length-1;
+  const avgChars=Math.round(totalChars/chapterCount);
+  const charCount=analysisData.characters?analysisData.characters.length:0;
 
-  document.getElementById('statsCards').innerHTML = [
-    { label: '总字数(含标点)', val: totalChars.toLocaleString() },
-    { label: '章节数', val: chaptersData.length },
-    { label: '角色数', val: analysisData.characters.length },
-    { label: '平均章字数', val: avgChars.toLocaleString() },
-    { label: '最长章', val: (longest?.title || '-') + ' ' + (longest?.chars_with_punct||0) },
-    { label: '最短章', val: (shortest?.title || '-') + ' ' + (shortest?.chars_with_punct||0) }
-  ].map(s => `<div class="stat-card rounded-xl p-4 text-center card-hover"><div class="stat-num text-2xl font-bold">${s.val}</div><div class="text-gray-400 text-xs mt-1">${s.label}</div></div>`).join('');
+  let html=`
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
+    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#8b5cf6">${chapterCount}</div><div style="font-size:13px;color:#888;margin-top:4px">总章数</div></div>
+    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#3498db">${totalChars.toLocaleString()}</div><div style="font-size:13px;color:#888;margin-top:4px">总字数(含标点)</div></div>
+    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#2ecc71">${avgChars.toLocaleString()}</div><div style="font-size:13px;color:#888;margin-top:4px">平均每章字数</div></div>
+    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#e74c3c">${charCount}</div><div style="font-size:13px;color:#888;margin-top:4px">人物/势力</div></div>
+  </div>
+  <div class="card" style="margin-bottom:24px">
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px;color:#fff">📊 各章字数分布</div>
+    <div style="position:relative;height:300px;width:100%"><canvas id="barChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div style="font-size:16px;font-weight:600;margin-bottom:16px;color:#fff">🔥 人物出场热力图</div>
+    <div id="heatmapContainer" style="overflow-x:auto"></div>
+  </div>`;
+  panel.innerHTML=html;
 
-  renderChart();
+  const labels=[],values=[];
+  for(let i=1;i<chaptersData.length;i++){
+    labels.push('第'+i+'章');
+    values.push(chaptersData[i].chars_with_punct);
+  }
+  const ctx=document.getElementById('barChart').getContext('2d');
+  chartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'字数',data:values,backgroundColor:'rgba(139,92,246,0.6)',borderColor:'rgba(139,92,246,1)',borderWidth:1,borderRadius:3}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+' 字'}}},
+      scales:{x:{ticks:{color:'#666',font:{size:10},maxRotation:45},grid:{display:false}},y:{ticks:{color:'#666'},grid:{color:'#1e1e3a'}}}
+    }
+  });
+
   renderHeatmap();
 }
 
-function renderChart() {
-  if (chartInstance) chartInstance.destroy();
-  const ctx = document.getElementById('chartChapters').getContext('2d');
-  chartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: chaptersData.map((c, i) => c.title || '第' + (i+1) + '章'),
-      datasets: [{
-        data: chaptersData.map(c => c.chars_with_punct || 0),
-        backgroundColor: chaptersData.map((_, i) => {
-          const hue = (i * 10 + 230) % 360;
-          return `hsla(${hue}, 70%, 60%, 0.7)`;
-        }),
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#9ca3af', font: { size: 9 }, maxRotation: 90 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-      }
-    }
-  });
-}
-
-function renderHeatmap() {
-  const chars = analysisData.characters;
-  const chCount = chaptersData.length;
-  if (!chars.length || !chCount) {
-    document.getElementById('heatmapContainer').innerHTML = '<div class="text-gray-500 text-sm">暂无数据</div>';
-    return;
+function renderHeatmap(){
+  const container=document.getElementById('heatmapContainer');
+  if(!analysisData.characters||!container)return;
+  const coreChars=analysisData.characters.filter(c=>['陈亦','陆执灯','曹留','谢观成','罗小满','老孟','杜衡','沈怀'].includes(c.name));
+  const chapterCount=chaptersData.length-1;
+  let html='<div style="display:flex;gap:4px;margin-bottom:8px;padding-left:90px">';
+  for(let i=1;i<=chapterCount;i++){
+    html+='<div style="width:14px;text-align:center;font-size:9px;color:#555">'+i+'</div>';
   }
-  let html = '<table class="text-xs"><tr><th class="px-1 py-1 text-gray-500"></th>';
-  for (let i = 0; i < chCount; i++) html += `<th class="px-1 py-1 text-gray-500" title="${chaptersData[i]?.title||''}">${i+1}</th>`;
-  html += '</tr>';
-  chars.forEach(ch => {
-    html += `<tr><td class="px-2 py-1 text-gray-300 whitespace-nowrap font-medium" style="color:${ch.color}">${ch.name}</td>`;
-    for (let i = 0; i < chCount; i++) {
-      const has = (chapters_data_has_character(ch, i));
-      const intensity = has ? 0.8 : 0.05;
-      const color = ch.color || '#6366f1';
-      html += `<td><div class="heatmap-cell" style="background:${color};opacity:${intensity}" title="${ch.name} - ${chaptersData[i]?.title||''}"></div></td>`;
+  html+='</div>';
+  for(const ch of coreChars){
+    html+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">';
+    html+='<div style="width:82px;text-align:right;font-size:12px;color:'+ch.color+';flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+ch.name+'</div>';
+    for(let i=1;i<chaptersData.length;i++){
+      const content=chaptersData[i].content||'';
+      const count=(content.match(new RegExp(ch.name,'g'))||[]).length;
+      const intensity=Math.min(count/5,1);
+      const bg=intensity===0?'#1a1a2e':`rgba(${parseInt(ch.color.slice(1,3),16)},${parseInt(ch.color.slice(3,5),16)},${parseInt(ch.color.slice(5,7),16)},${0.2+intensity*0.8})`;
+      html+='<div class="heatmap-cell" style="background:'+bg+'" title="'+ch.name+' 第'+i+'章: '+count+'次"></div>';
     }
-    html += '</tr>';
-  });
-  html += '</table>';
-  document.getElementById('heatmapContainer').innerHTML = html;
+    html+='</div>';
+  }
+  container.innerHTML=html;
 }
 
-function chapters_data_has_character(charObj, chapterIdx) {
-  const charName = charObj.name;
-  const ch = chaptersData[chapterIdx];
-  if (!ch || !ch.content) return false;
-  return ch.content.includes(charName);
-}
-
-// ===== CHAPTERS =====
-function renderChapterList(filter = '') {
-  const list = document.getElementById('chapterList');
-  const filtered = chaptersData.map((c, i) => ({...c, idx: i})).filter(c => {
-    if (!filter) return true;
-    return (c.title || '').includes(filter) || (c.content || '').includes(filter);
+function renderChapters(){
+  const panel=document.getElementById('panel-chapters');
+  const chapterList=chaptersData.slice(1);
+  let listHtml='';
+  chapterList.forEach((ch,i)=>{
+    const num=i+1;
+    listHtml+=`<div class="chapter-item" data-idx="${num}" onclick="selectChapter(${num})" style="padding:10px 16px;cursor:pointer;border-radius:8px;transition:background .15s;font-size:14px;color:${num===currentChapter?'#fff':'#888'};background:${num===currentChapter?'#1e1e3a':'transparent'};margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${num}. ${ch.title.substring(0,25)}</div>`;
   });
-  list.innerHTML = filtered.map(c => `
-    <div class="chapter-item px-4 py-3 border-b border-gray-800/50 ${c.idx === selectedChapter ? 'active' : ''}" onclick="selectChapter(${c.idx})">
-      <div class="text-sm font-medium text-gray-200">${c.title || '未命名章节'}</div>
-      <div class="text-xs text-gray-500 mt-1">${(c.chars_with_punct||0).toLocaleString()}字 · ${c.lines||0}行</div>
+
+  panel.innerHTML=`
+  <div style="display:flex;gap:16px;align-items:flex-start">
+    <div id="chapterSidebar" style="width:260px;flex-shrink:0;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto;background:#0d0d1a;border-radius:12px;border:1px solid #1e1e3a;padding:8px" class="desktop-sidebar">
+      <div style="padding:8px 16px;font-size:14px;font-weight:600;color:#8b5cf6;margin-bottom:4px">目录 (${chapterList.length}章)</div>
+      ${listHtml}
     </div>
-  `).join('');
+    <div id="mobileDropdown" style="display:none;width:100%;margin-bottom:16px">
+      <select id="chapterSelect" onchange="selectChapter(+this.value)" style="width:100%;padding:12px;background:#111128;color:#d4d4d4;border:1px solid #1e1e3a;border-radius:8px;font-size:15px;font-family:serif">
+        ${chapterList.map((ch,i)=>`<option value="${i+1}" ${i+1===currentChapter?'selected':''}>${i+1}. ${ch.title.substring(0,30)}</option>`).join('')}
+      </select>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div id="chapterDisplay"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:24px;padding:0 16px" id="chapterNav"></div>
+    </div>
+  </div>`;
+  selectChapter(currentChapter);
+  updateSidebarVisibility();
+  window.addEventListener('resize',updateSidebarVisibility);
 }
 
-function filterChapters(val) { renderChapterList(val); }
-
-function selectChapter(idx) {
-  selectedChapter = idx;
-  const ch = chaptersData[idx];
-  document.getElementById('chapterTitle').textContent = ch?.title || '未命名';
-  document.getElementById('chapterContent').textContent = ch?.content || '';
-  document.getElementById('chapterWordCount').textContent = (ch?.chars_with_punct || 0) + '字';
-  renderChapterList(document.getElementById('chapterSearch')?.value || '');
+function updateSidebarVisibility(){
+  const sidebar=document.getElementById('chapterSidebar');
+  const dropdown=document.getElementById('mobileDropdown');
+  if(!sidebar||!dropdown)return;
+  if(window.innerWidth<768){
+    sidebar.style.display='none';
+    dropdown.style.display='block';
+  }else{
+    sidebar.style.display='block';
+    dropdown.style.display='none';
+  }
 }
 
-function onChapterEdit() {
-  const content = document.getElementById('chapterContent').textContent;
-  chaptersData[selectedChapter].content = content;
-  const cn = (content.match(/[\u4e00-\u9fff]/g) || []).length;
-  const punct = (content.match(/[^\u4e00-\u9fff\n\r\s]/g) || []).length;
-  chaptersData[selectedChapter].chinese_only = cn;
-  chaptersData[selectedChapter].punctuation = punct;
-  chaptersData[selectedChapter].chars_with_punct = cn + punct;
-  chaptersData[selectedChapter].lines = content.split('\n').length;
-  document.getElementById('chapterWordCount').textContent = (cn + punct) + '字';
-  save(LS_KEYS.chapters, chaptersData);
-  renderChapterList(document.getElementById('chapterSearch')?.value || '');
-}
+function selectChapter(num){
+  currentChapter=num;
+  const ch=chaptersData[num];
+  if(!ch)return;
+  const display=document.getElementById('chapterDisplay');
+  const paragraphs=ch.content.split('\n').filter(p=>p.trim());
+  let contentHtml='<div class="chapter-content">';
+  contentHtml+=`<h1 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:24px;text-indent:0;font-family:serif;text-align:center">${ch.title}</h1>`;
+  for(const p of paragraphs){
+    if(p.startsWith('第')&&p.includes('章')){
+      contentHtml+=`<p style="text-indent:0;color:#8b5cf6;font-weight:600;font-size:19px;margin-bottom:16px;text-align:center">${p}</p>`;
+    }else{
+      contentHtml+=`<p>${p}</p>`;
+    }
+  }
+  contentHtml+='</div>';
+  display.innerHTML=contentHtml;
 
-function addChapter() {
-  const num = chaptersData.length + 1;
-  chaptersData.push({
-    title: '新章节 ' + num,
-    content: '',
-    chars_with_punct: 0,
-    chinese_only: 0,
-    punctuation: 0,
-    lines: 0
+  const nav=document.getElementById('chapterNav');
+  nav.innerHTML=`
+    <button class="chapter-nav-btn" onclick="selectChapter(${num-1})" ${num<=1?'disabled':''}>← 上一章</button>
+    <span style="color:#555;font-size:13px;line-height:36px">${num} / ${chaptersData.length-1}</span>
+    <button class="chapter-nav-btn" onclick="selectChapter(${num+1})" ${num>=chaptersData.length-1?'disabled':''}>下一章 →</button>`;
+
+  document.querySelectorAll('.chapter-item').forEach(el=>{
+    const idx=+el.dataset.idx;
+    el.style.color=idx===num?'#fff':'#888';
+    el.style.background=idx===num?'#1e1e3a':'transparent';
   });
-  save(LS_KEYS.chapters, chaptersData);
-  selectChapter(chaptersData.length - 1);
-  renderChapterList();
-  toast('已添加新章节');
+
+  const sel=document.getElementById('chapterSelect');
+  if(sel)sel.value=num;
+
+  display.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function copyChapter() {
-  const ch = chaptersData[selectedChapter];
-  if (!ch) return;
-  navigator.clipboard.writeText(ch.content || '').then(() => toast('已复制本章'));
-}
-
-function copyAllChapters() {
-  const text = chaptersData.map(c => (c.title || '') + '\n\n' + (c.content || '')).join('\n\n---\n\n');
-  navigator.clipboard.writeText(text).then(() => toast('已复制全文'));
-}
-
-function exportChapterTXT() {
-  const ch = chaptersData[selectedChapter];
-  if (!ch) return;
-  const blob = new Blob([ch.content || ''], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = (ch.title || '章节') + '.txt';
-  a.click();
-  toast('已导出TXT');
-}
-
-// ===== CHARACTERS =====
-function renderCharacters() {
-  const grid = document.getElementById('characterGrid');
-  grid.innerHTML = analysisData.characters.map((ch, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 card-hover relative group">
-      <button onclick="deleteCharacter(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition" title="删除">✕</button>
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background:${ch.color}">${(ch.name||'?')[0]}</div>
+function renderCharacters(){
+  const panel=document.getElementById('panel-characters');
+  if(!analysisData.characters){panel.innerHTML='<p style="color:#666;padding:20px">暂无人物数据</p>';return;}
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">';
+  for(const c of analysisData.characters){
+    html+=`<div class="card" style="border-left:3px solid ${c.color}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:42px;height:42px;border-radius:50%;background:${c.color}22;border:2px solid ${c.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:${c.color};flex-shrink:0">${c.name[0]}</div>
         <div>
-          <div class="font-bold text-gray-200" contenteditable="true" onblur="updateChar(${i},'name',this.textContent)">${ch.name||''}</div>
-          <div class="text-xs text-gray-500" contenteditable="true" onblur="updateChar(${i},'role',this.textContent)">${ch.role||''}</div>
+          <div style="font-size:17px;font-weight:700;color:#fff">${c.name}</div>
+          <div style="font-size:12px;color:${c.color}">${c.role||''}</div>
         </div>
       </div>
-      <div class="text-sm text-gray-400 mb-3" contenteditable="true" onblur="updateChar(${i},'desc',this.textContent)">${ch.desc||''}</div>
-      <div class="flex items-center gap-2 mb-2">
-        <span class="text-xs text-gray-500">颜色:</span>
-        <input type="color" value="${ch.color||'#6366f1'}" onchange="updateChar(${i},'color',this.value);this.previousElementSibling.parentElement.querySelector('.w-10').style.background=this.value" class="w-6 h-6 rounded cursor-pointer border-0">
-      </div>
-      <div class="text-xs text-indigo-300 italic" contenteditable="true" onblur="updateChar(${i},'quote',this.textContent)">"${ch.quote||''}"</div>
-    </div>
-  `).join('');
-}
-
-function updateChar(i, field, val) {
-  analysisData.characters[i][field] = val;
-  save(LS_KEYS.analysis, analysisData);
-  if (field === 'name' || field === 'color') renderCharacters();
-}
-
-function addCharacter() {
-  analysisData.characters.push({ name: '新角色', role: '', desc: '', color: '#6366f1', quote: '' });
-  save(LS_KEYS.analysis, analysisData);
-  renderCharacters();
-  toast('已添加人物');
-}
-
-function deleteCharacter(i) {
-  if (!confirm('确定删除该人物？')) return;
-  analysisData.characters.splice(i, 1);
-  save(LS_KEYS.analysis, analysisData);
-  renderCharacters();
-  toast('已删除');
-}
-
-// ===== RELATIONS =====
-function renderRelations() {
-  const list = document.getElementById('relationList');
-  list.innerHTML = analysisData.relationships.map((r, i) => `
-    <div class="flex items-center gap-2 bg-[#0a0a18] rounded-lg p-3 border border-gray-800 group">
-      <input value="${r.from}" onchange="updateRel(${i},'from',this.value)" class="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
-      <span class="text-gray-600">→</span>
-      <input value="${r.to}" onchange="updateRel(${i},'to',this.value)" class="w-20 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
-      <input value="${r.label}" onchange="updateRel(${i},'label',this.value)" class="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-indigo-500">
-      <input type="number" min="1" max="5" value="${r.strength}" onchange="updateRel(${i},'strength',+this.value)" class="w-14 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-gray-300 text-center focus:outline-none focus:border-indigo-500">
-      <button onclick="deleteRel(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
-    </div>
-  `).join('');
-  renderRelationGraph();
-}
-
-function updateRel(i, field, val) {
-  analysisData.relationships[i][field] = val;
-  save(LS_KEYS.analysis, analysisData);
-  renderRelationGraph();
-}
-
-function addRelation() {
-  analysisData.relationships.push({ from: '', to: '', label: '', strength: 3 });
-  save(LS_KEYS.analysis, analysisData);
-  renderRelations();
-  toast('已添加关系');
-}
-
-function deleteRel(i) {
-  analysisData.relationships.splice(i, 1);
-  save(LS_KEYS.analysis, analysisData);
-  renderRelations();
-  toast('已删除');
-}
-
-function renderRelationGraph() {
-  const svg = document.getElementById('relationSvg');
-  if (!svg) return;
-  const width = svg.clientWidth || 600;
-  const height = 400;
-  const names = [...new Set(analysisData.relationships.flatMap(r => [r.from, r.to].filter(Boolean)))];
-  if (!names.length) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#6b7280" font-size="14">暂无关系数据</text>'; return; }
-
-  const cx = width / 2, cy = height / 2;
-  const radius = Math.min(width, height) * 0.35;
-  const positions = {};
-  names.forEach((n, i) => {
-    const angle = (i / names.length) * Math.PI * 2 - Math.PI / 2;
-    positions[n] = { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
-  });
-
-  let html = '';
-  analysisData.relationships.forEach(r => {
-    if (!positions[r.from] || !positions[r.to]) return;
-    const p1 = positions[r.from], p2 = positions[r.to];
-    html += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" class="relationship-line" stroke-width="${r.strength || 2}"/>`;
-    const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-    html += `<text x="${mx}" y="${my - 5}" text-anchor="middle" fill="#9ca3af" font-size="10">${r.label}</text>`;
-  });
-
-  names.forEach(n => {
-    const p = positions[n];
-    const charObj = analysisData.characters.find(c => c.name === n);
-    const color = charObj?.color || '#6366f1';
-    html += `<circle cx="${p.x}" cy="${p.y}" r="22" fill="${color}" class="relationship-node" opacity="0.85"/>`;
-    html += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">${n}</text>`;
-  });
-
-  svg.innerHTML = html;
-}
-
-// ===== WORLD SETTINGS =====
-function renderWorldSettings() {
-  const grid = document.getElementById('worldGrid');
-  grid.innerHTML = analysisData.worldSettings.map((w, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 card-hover relative group">
-      <button onclick="deleteWorldSetting(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="flex items-center gap-2 mb-2">
-        <span class="text-xs px-2 py-0.5 bg-indigo-900/50 text-indigo-300 rounded" contenteditable="true" onblur="updateWorld(${i},'type',this.textContent)">${w.type||''}</span>
-        <span class="font-bold text-gray-200" contenteditable="true" onblur="updateWorld(${i},'name',this.textContent)">${w.name||''}</span>
-      </div>
-      <div class="text-sm text-gray-400" contenteditable="true" onblur="updateWorld(${i},'desc',this.textContent)">${w.desc||''}</div>
-    </div>
-  `).join('');
-}
-
-function updateWorld(i, field, val) {
-  analysisData.worldSettings[i][field] = val;
-  save(LS_KEYS.analysis, analysisData);
-}
-
-function addWorldSetting() {
-  analysisData.worldSettings.push({ name: '新设定', type: '', desc: '' });
-  save(LS_KEYS.analysis, analysisData);
-  renderWorldSettings();
-  toast('已添加设定');
-}
-
-function deleteWorldSetting(i) {
-  analysisData.worldSettings.splice(i, 1);
-  save(LS_KEYS.analysis, analysisData);
-  renderWorldSettings();
-  toast('已删除');
-}
-
-// ===== TIMELINE =====
-function renderTimeline() {
-  const container = document.getElementById('timelineContainer');
-  const typeColors = { turning: '#f59e0b', discovery: '#10b981', character: '#6366f1', crisis: '#ef4444' };
-  container.innerHTML = analysisData.timeline.map((t, i) => `
-    <div class="relative flex items-start gap-4 mb-6 group">
-      <div class="timeline-line" style="height: calc(100% + 16px)"></div>
-      <div class="timeline-dot flex-shrink-0 mt-1" style="border-color:${typeColors[t.type]||'#818cf8'}"></div>
-      <div class="flex-1 bg-[#111128] rounded-lg p-4 border border-gray-800 relative">
-        <button onclick="deleteTimelineEvent(${i})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="text-xs px-2 py-0.5 rounded" style="background:${typeColors[t.type]||'#6366f1'}22;color:${typeColors[t.type]||'#818cf8'}">${t.type||'event'}</span>
-          <span class="text-xs text-gray-500">第${t.ch??'?'}章</span>
-        </div>
-        <div class="text-sm text-gray-300" contenteditable="true" onblur="updateTimeline(${i},'event',this.textContent)">${t.event||''}</div>
-        <div class="flex gap-2 mt-2">
-          <input type="number" min="0" value="${t.ch??0}" onchange="updateTimeline(${i},'ch',+this.value)" class="w-16 bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-400 focus:outline-none focus:border-indigo-500" placeholder="章节">
-          <select onchange="updateTimeline(${i},'type',this.value)" class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-400 focus:outline-none focus:border-indigo-500">
-            <option value="turning" ${t.type==='turning'?'selected':''}>转折</option>
-            <option value="discovery" ${t.type==='discovery'?'selected':''}>发现</option>
-            <option value="character" ${t.type==='character'?'selected':''}>人物</option>
-            <option value="crisis" ${t.type==='crisis'?'selected':''}>危机</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function updateTimeline(i, field, val) {
-  analysisData.timeline[i][field] = val;
-  save(LS_KEYS.analysis, analysisData);
-}
-
-function addTimelineEvent() {
-  analysisData.timeline.push({ ch: 0, event: '新事件', type: 'turning' });
-  save(LS_KEYS.analysis, analysisData);
-  renderTimeline();
-  toast('已添加事件');
-}
-
-function deleteTimelineEvent(i) {
-  analysisData.timeline.splice(i, 1);
-  save(LS_KEYS.analysis, analysisData);
-  renderTimeline();
-  toast('已删除');
-}
-
-// ===== NOTES =====
-function renderNotes() {
-  const container = document.getElementById('notesContainer');
-  if (!notesData.length) {
-    container.innerHTML = '<div class="empty-state">还没有笔记，点击下方按钮添加</div>';
-    return;
+      <div style="font-size:14px;color:#aaa;line-height:1.7;margin-bottom:10px">${c.desc||''}</div>
+      ${c.quote?`<div style="font-size:13px;color:#666;font-style:italic;border-left:2px solid ${c.color}44;padding-left:10px;margin-top:8px">"${c.quote}"</div>`:''}
+    </div>`;
   }
-  container.innerHTML = notesData.map((n, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
-      <button onclick="deleteNote(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="text-xs text-gray-500 mb-2">${n.time || ''}</div>
-      <div class="text-gray-300 min-h-[80px] focus:outline-none" contenteditable="true" onblur="updateNote(${i},this.textContent)">${n.text||''}</div>
-    </div>
-  `).join('');
+  html+='</div>';
+  panel.innerHTML=html;
 }
 
-function addNote() {
-  notesData.push({ text: '', time: new Date().toLocaleString('zh-CN') });
-  save(LS_KEYS.notes, notesData);
-  renderNotes();
-  toast('已添加笔记');
+function renderRelations(){
+  const panel=document.getElementById('panel-relations');
+  if(!analysisData.relationships){panel.innerHTML='<p style="color:#666;padding:20px">暂无关系数据</p>';return;}
+  const charMap={};
+  analysisData.characters.forEach(c=>charMap[c.name]=c);
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px">';
+  for(const r of analysisData.relationships){
+    const fromC=charMap[r.from]||{color:'#666'};
+    const toC=charMap[r.to]||{color:'#666'};
+    const strengthBar='█'.repeat(r.strength||1)+'░'.repeat(5-(r.strength||1));
+    html+=`<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-weight:700;color:${fromC.color}">${r.from}</span>
+        <span style="font-size:12px;padding:3px 10px;background:#1e1e3a;border-radius:20px;color:#aaa">${r.label}</span>
+        <span style="font-weight:700;color:${toC.color}">${r.to}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:2px;background:linear-gradient(90deg,${fromC.color},${toC.color});border-radius:1px"></div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#555">强度: <span style="color:#8b5cf6;font-family:monospace">${strengthBar}</span></div>
+      ${r.type?`<div style="margin-top:4px;font-size:11px;color:#444">类型: ${r.type}</div>`:''}
+    </div>`;
+  }
+  html+='</div>';
+  panel.innerHTML=html;
 }
 
-function updateNote(i, val) {
-  notesData[i].text = val;
-  save(LS_KEYS.notes, notesData);
+function renderWorld(){
+  const panel=document.getElementById('panel-world');
+  const ws=analysisData.worldSettings;
+  if(!ws||!ws.length){panel.innerHTML='<p style="color:#666;padding:20px">暂无世界观数据</p>';return;}
+  const typeColors={'机构':'#8b5cf6','部门':'#3498db','上级':'#e74c3c','灰色势力':'#666','地下组织':'#2ecc71','地点':'#f39c12','宇宙常数':'#e74c3c','核心机制':'#e67e22','干涉界面':'#9b59b6','历史势力':'#1abc9c','终极事件':'#c0392b','核心设定':'#8b5cf6','经济体系':'#f1c40f','白忘原机制':'#1abc9c','死账荒白':'#c0392b','碎卷海机制':'#3498db','铁锈工坊暗线':'#e67e22'};
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px">';
+  for(const w of ws){
+    const c=typeColors[w.type]||'#8b5cf6';
+    html+=`<div class="card world-card" style="border-left-color:${c}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:17px;font-weight:700;color:#fff">${w.name}</span>
+        <span style="font-size:11px;padding:2px 8px;background:${c}22;color:${c};border-radius:12px">${w.type}</span>
+      </div>
+      <div style="font-size:14px;color:#aaa;line-height:1.7">${w.desc}</div>
+    </div>`;
+  }
+  html+='</div>';
+  panel.innerHTML=html;
 }
 
-function deleteNote(i) {
-  notesData.splice(i, 1);
-  save(LS_KEYS.notes, notesData);
-  renderNotes();
-  toast('已删除');
-}
-
-// ===== GLOBAL SEARCH =====
-function globalSearchFn(query) {
-  if (!query.trim()) return;
-  switchTab('chapters');
-  document.getElementById('chapterSearch').value = query;
-  filterChapters(query);
-  // Also highlight in content if a chapter matches
-  const idx = chaptersData.findIndex(c => (c.content || '').includes(query));
-  if (idx >= 0) selectChapter(idx);
-}
-
-// ===== IMPORT / EXPORT / RESET =====
-function exportAllJSON() {
-  const data = { chapters: chaptersData, analysis: analysisData, notes: notesData, outline: outlineData, worldbuilding: worldbuildingData, patches: patchesData };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '创作控制台_备份_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  toast('已导出全部JSON');
-}
-
-function importJSON(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.chapters) chaptersData = data.chapters;
-      if (data.analysis) analysisData = data.analysis;
-      if (data.notes) notesData = data.notes;
-      if (data.outline) outlineData = data.outline;
-      if (data.worldbuilding) worldbuildingData = data.worldbuilding;
-      if (data.patches) patchesData = data.patches;
-      save(LS_KEYS.chapters, chaptersData);
-      save(LS_KEYS.analysis, analysisData);
-      save(LS_KEYS.notes, notesData);
-      save(LS_KEYS.outline, outlineData);
-      save(LS_KEYS.worldbuilding, worldbuildingData);
-      save(LS_KEYS.patches, patchesData);
-      renderAll();
-      toast('导入成功');
-    } catch (err) {
-      toast('导入失败：JSON格式错误', 'error');
+function renderOutline(){
+  const panel=document.getElementById('panel-outline');
+  const structure=chaptersData[0];
+  if(!structure){panel.innerHTML='<p style="color:#666">无大纲数据</p>';return;}
+  const paragraphs=structure.content.split('\n').filter(p=>p.trim());
+  let html='<div class="outline-content"><h2 style="font-size:22px;font-weight:700;color:#8b5cf6;margin-bottom:24px;text-align:center">📋 结构文档 · 大纲</h2>';
+  for(const p of paragraphs){
+    if(p.startsWith('第')&&p.includes('章')){
+      html+=`<h3 style="font-size:17px;font-weight:700;color:#e67e22;margin:24px 0 12px;padding-left:8px;border-left:3px solid #e67e22">${p}</h3>`;
+    }else if(p.startsWith('#')){
+      html+=`<h3 style="font-size:18px;font-weight:700;color:#fff;margin:20px 0 10px">${p.replace(/^#+\s*/,'')}</h3>`;
+    }else if(p.startsWith('---')){
+      html+=`<hr style="border:none;border-top:1px solid #1e1e3a;margin:20px 0">`;
+    }else if(p.length<30&&(p.includes('：')||p.includes(':'))){
+      html+=`<p style="font-weight:600;color:#d4d4d4;text-indent:0">${p}</p>`;
+    }else{
+      html+=`<p>${p}</p>`;
     }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function resetData() {
-  if (!confirm('确定要重置所有数据？localStorage中的数据将被清除，重新从文件加载。')) return;
-  localStorage.removeItem(LS_KEYS.chapters);
-  localStorage.removeItem(LS_KEYS.analysis);
-  localStorage.removeItem(LS_KEYS.notes);
-  localStorage.removeItem(LS_KEYS.outline);
-  localStorage.removeItem(LS_KEYS.worldbuilding);
-  localStorage.removeItem(LS_KEYS.patches);
-  notesData = [];
-  outlineData = { story: '', chapterOutlines: [], plotThreads: [], suspense: [] };
-  worldbuildingData = getDefaultWorldbuilding();
-  patchesData = getDefaultPatches();
-  initData();
-  toast('已重置');
-}
-
-// ===== OUTLINE =====
-function getDefaultOutline() {
-  const story = `第一幕（ch01-07）：穿越与立足
-陈亦醒来，发现沈怀的身份，在水衡司生存
-
-第二幕（ch08-14）：调查与接触
-发现下湾线索，陆执灯出场，身份危机
-
-第三幕（ch15-20）：深入与结盟
-废纸库测试，夜会导淮，银号出现
-
-第四幕（ch21-28）：危机与真相
-誊录事件，杜衡对抗，找到沈怀后手
-
-第五幕（ch29-32）：收束（用户原稿）`;
-
-  const chapterOutlines = [
-    { title: '序章', text: '沈怀死，陈亦穿越' },
-    { title: 'ch01', text: '停尸房醒来，发现穿越' },
-    { title: 'ch02', text: '初到沈怀住处' },
-    { title: 'ch03', text: '水衡司第一天，认识同僚' },
-    { title: 'ch04', text: '熟悉沈怀的日常，发现异常' },
-    { title: 'ch05', text: '处理公务，发现水衡司的秘密' },
-    { title: 'ch06', text: '与同僚建立关系，初步立足' },
-    { title: 'ch07', text: '第一幕收束，陈亦决定留下' },
-    { title: 'ch08', text: '开始调查下湾事件' },
-    { title: 'ch09', text: '发现下湾线索' },
-    { title: 'ch10', text: '陆执灯首次出场' },
-    { title: 'ch11', text: '身份危机初现' },
-    { title: 'ch12', text: '深入下湾调查' },
-    { title: 'ch13', text: '陆执灯的秘密初露端倪' },
-    { title: 'ch14', text: '第二幕收束，危机加深' },
-    { title: 'ch15', text: '废纸库测试开始' },
-    { title: 'ch16', text: '通过测试，获得信任' },
-    { title: 'ch17', text: '夜会导淮' },
-    { title: 'ch18', text: '银号首次出现' },
-    { title: 'ch19', text: '结盟深入' },
-    { title: 'ch20', text: '第三幕收束，局势明朗' },
-    { title: 'ch21', text: '誊录事件爆发' },
-    { title: 'ch22', text: '杜衡开始对抗' },
-    { title: 'ch23', text: '找到沈怀后手的线索' },
-    { title: 'ch24', text: '危机加剧' },
-    { title: 'ch25', text: '真相浮出水面' },
-    { title: 'ch26', text: '杜衡的反击' },
-    { title: 'ch27', text: '沈怀后手揭秘' },
-    { title: 'ch28', text: '第四幕收束，决战前夕' },
-    { title: 'ch29', text: '收束开始' },
-    { title: 'ch30', text: '最终对决' },
-    { title: 'ch31', text: '尘埃落定' },
-    { title: 'ch32', text: '结局' },
-  ];
-
-  const plotThreads = [
-    '主线：陈亦的生存与身份',
-    '副线1：下湾三十七项真相',
-    '副线2：陆执灯的秘密',
-    '副线3：银号的布局',
-    '暗线：沈怀的遗产',
-  ];
-
-  const suspense = [
-    '沈怀到底知道了什么？',
-    '陆执灯最终站哪边？',
-    '银号要买的是什么？',
-    '底稿去了哪里？',
-    '小陶瓶里是什么？',
-  ];
-
-  return { story, chapterOutlines, plotThreads, suspense };
-}
-
-function renderOutline() {
-  const saved = load(LS_KEYS.outline);
-  if (saved && saved.story !== undefined) {
-    outlineData = saved;
-  } else {
-    outlineData = getDefaultOutline();
-    save(LS_KEYS.outline, outlineData);
   }
-  renderStoryOutline();
-  renderChapterOutlines();
-  renderPlotThreads();
-  renderSuspense();
+  html+='</div>';
+  panel.innerHTML=html;
 }
 
-function renderStoryOutline() {
-  document.getElementById('storyOutline').textContent = outlineData.story;
+function renderPatches(){
+  const panel=document.getElementById('panel-patches');
+  const notes=analysisData.notes;
+  const timeline=analysisData.timeline;
+  let html='';
+
+  if(timeline&&timeline.length){
+    html+=`<div class="card" style="margin-bottom:24px">
+      <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:16px">⏱️ 时间线</div>
+      <div style="position:relative;padding-left:24px">`;
+    for(let i=0;i<timeline.length;i++){
+      const t=timeline[i];
+      const colors={turning:'#e74c3c',discovery:'#2ecc71',character:'#3498db',crisis:'#f39c12'};
+      const tc=colors[t.type]||'#8b5cf6';
+      html+=`<div style="position:relative;padding-bottom:20px;border-left:2px solid #1e1e3a;padding-left:20px;margin-left:0">
+        <div style="position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;background:${tc};border:2px solid #0a0a0f"></div>
+        <div style="font-size:12px;color:${tc};margin-bottom:2px">${t.time||t.chapter||''} ${t.type?'· '+t.type:''}</div>
+        <div style="font-size:14px;color:#d4d4d4">${t.event}</div>
+      </div>`;
+    }
+    html+='</div></div>';
+  }
+
+  if(!notes||!notes.length){
+    html+=`<div class="card">
+      <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:12px">🔧 补丁集</div>
+      <div style="color:#555;font-size:14px;padding:20px;text-align:center">暂无补丁记录</div>
+    </div>`;
+  }else{
+    html+=`<div class="card">
+      <div style="font-size:16px;font-weight:600;color:#fff;margin-bottom:12px">🔧 补丁集</div>
+      <div style="font-size:14px;color:#aaa;line-height:1.8">${notes.map(n=>`<div style="padding:8px 0;border-bottom:1px solid #1e1e3a">${typeof n==='string'?n:JSON.stringify(n)}</div>`).join('')}</div>
+    </div>`;
+  }
+  panel.innerHTML=html;
 }
 
-function renderChapterOutlines() {
-  const container = document.getElementById('chapterOutlineList');
-  container.innerHTML = outlineData.chapterOutlines.map((item, i) => `
-    <div class="bg-[#111128] rounded-lg border border-gray-800 overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#151530] transition" onclick="toggleOutlineItem(${i})">
-        <span class="text-sm font-medium text-gray-200">${item.title}</span>
-        <span class="text-xs text-gray-500 transition-transform transform" id="outline-arrow-${i}">▼</span>
-      </div>
-      <div class="px-4 pb-3 hidden" id="outline-body-${i}">
-        <div class="text-sm text-gray-400 min-h-[40px] focus:outline-none leading-relaxed" contenteditable="true" oninput="updateChapterOutline(${i}, this.textContent)">${item.text}</div>
-      </div>
-    </div>
-  `).join('');
-}
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',function(){
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    const panel=document.getElementById('panel-'+this.dataset.tab);
+    if(panel)panel.classList.add('active');
+    if(this.dataset.tab==='chapters')updateSidebarVisibility();
+  });
+});
 
-function toggleOutlineItem(i) {
-  const body = document.getElementById('outline-body-' + i);
-  const arrow = document.getElementById('outline-arrow-' + i);
-  body.classList.toggle('hidden');
-  arrow.style.transform = body.classList.contains('hidden') ? '' : 'rotate(180deg)';
-}
-
-function updateChapterOutline(i, text) {
-  outlineData.chapterOutlines[i].text = text;
-  save(LS_KEYS.outline, outlineData);
-}
-
-function renderPlotThreads() {
-  const container = document.getElementById('plotThreadsList');
-  container.innerHTML = outlineData.plotThreads.map((item, i) => `
-    <div class="flex items-center gap-2 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
-      <span class="text-indigo-400 text-sm">●</span>
-      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" oninput="updatePlotThread(${i}, this.textContent)">${item}</div>
-      <button onclick="deletePlotThread(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
-    </div>
-  `).join('');
-}
-
-function updatePlotThread(i, val) {
-  outlineData.plotThreads[i] = val;
-  save(LS_KEYS.outline, outlineData);
-}
-
-function addPlotThread() {
-  outlineData.plotThreads.push('新线索');
-  save(LS_KEYS.outline, outlineData);
-  renderPlotThreads();
-  toast('已添加线索');
-}
-
-function deletePlotThread(i) {
-  outlineData.plotThreads.splice(i, 1);
-  save(LS_KEYS.outline, outlineData);
-  renderPlotThreads();
-  toast('已删除');
-}
-
-function renderSuspense() {
-  const container = document.getElementById('suspenseList');
-  container.innerHTML = outlineData.suspense.map((item, i) => `
-    <div class="flex items-center gap-2 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
-      <span class="text-amber-400 text-sm">❓</span>
-      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" oninput="updateSuspense(${i}, this.textContent)">${item}</div>
-      <button onclick="deleteSuspense(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
-    </div>
-  `).join('');
-}
-
-function updateSuspense(i, val) {
-  outlineData.suspense[i] = val;
-  save(LS_KEYS.outline, outlineData);
-}
-
-function addSuspense() {
-  outlineData.suspense.push('新悬念');
-  save(LS_KEYS.outline, outlineData);
-  renderSuspense();
-  toast('已添加悬念');
-}
-
-function deleteSuspense(i) {
-  outlineData.suspense.splice(i, 1);
-  save(LS_KEYS.outline, outlineData);
-  renderSuspense();
-  toast('已删除');
-}
-
-function saveOutline() {
-  outlineData.story = document.getElementById('storyOutline').textContent;
-  save(LS_KEYS.outline, outlineData);
-}
-
-// ===== WORLDBUILDING =====
-function getDefaultWorldbuilding() {
-  return {
-    factions: `【水衡司（官方）】
-管水衙门，朝廷中枢下属机构。
-下设：录房（核心机要）、工料库（物资调配）、废纸库（废弃档案存放）。
-职能：管理地方水务、河道治理、堤防修缮，同时承担朝廷下达的各类文书事务。
-实质上是朝廷控制地方的触手，通过"前牍"制度（旧档调阅权）掌握地方命脉。
-
-【中枢（上级）】
-朝廷中枢，水衡司的直接上级。
-通过"前牍"控制地方——前牍是旧档调阅权，中枢可以随时调取地方任何已归档的文书。
-是整个体制的核心，地方一切事务最终都要上报中枢。
-
-【背债银号（灰色）】
-买卖情报和判断的灰色机构。
-核心人物：白灯账使。
-运作方式：以"背债"为名，实则进行情报交易、利益交换。
-既不属于官方，也不完全属于地下，是体制内外的灰色地带。
-
-【导淮（地下）】
-下湾幸存者组成的地下组织。
-核心诉求：反对体制，追求真相。
-起源：下湾三十七项（下湾事件）的幸存者，因体制的不公而走到一起。
-与陈亦/沈怀的关系：潜在的盟友，但立场微妙。`,
-    abilities: [
-      { name: '墨未干', owner: '沈怀（原有）→陈亦（继承）', desc: '看见纸上未干的墨迹，能读取刚写下的文字内容，无论时间过去多久', limit: '只能看见墨迹，无法看见更早的书写痕迹', cost: '使用时会暂时失去对其他文字的感知' },
-      { name: '补痕', owner: '陈亦（新获得）', desc: '接住残痕，让纸自己吐出更多——能从残缺的文档中补全缺失的信息', limit: '补全的内容可能不完全准确，需要验证', cost: '每次使用会消耗纸张的生命力' },
-      { name: '截声', owner: '曹留', desc: '截断声音，让人慢半拍——可以在关键时刻让目标的听觉反应延迟', limit: '作用时间短，只能影响一个人', cost: '使用后自己也会短暂失聪' }
-    ],
-    locations: [
-      { name: '水衡司', position: '城内衙门', desc: '管水衙门所在地，朝廷中枢下属机构的办公场所', events: '陈亦穿越后第一天到达，日常办公场所' },
-      { name: '录房', position: '水衡司核心', desc: '水衡司最核心的部门，存放重要档案和机密文书', events: '陈亦通过测试后进入，发现沈怀的遗留线索' },
-      { name: '下湾', position: '旧堤旁旧工区', desc: '下湾事件发生地，曾经的工区，现在是废墟', events: '下湾三十七项事件，导淮组织的起源地' },
-      { name: '废纸库', position: '录房后面', desc: '存放废弃档案的地方，看似无用实则藏有关键信息', events: '陈亦在此进行测试，发现重要线索' },
-      { name: '旧堤', position: '城外堤防', desc: '城外的旧堤防，年久失修，与下湾事件有关', events: '下湾事件的关联地点' }
-    ],
-    rules: [
-      { name: '承册制度', desc: '死了也能承——官员死后，其职责和文书由继任者"承册"继续处理', impact: '陈亦以沈怀身份承册，必须继续处理沈怀未完成的事务' },
-      { name: '封册制度', desc: '墨未干不出案——只有当文书上的墨迹未干时，才能立案处理', impact: '限制了案件的处理时效，也影响了陈亦能力的使用' },
-      { name: '誊录制度', desc: '大件入房拆栏分誊——大型文书必须拆分誊录，分别归档', impact: '导致信息碎片化，增加了调查难度，但也提供了可利用的漏洞' }
-    ]
-  };
-}
-
-function renderWorldbuilding() {
-  document.getElementById('factionsContent').textContent = worldbuildingData.factions;
-  renderAbilities();
-  renderLocations();
-  renderRules();
-}
-
-function saveFactions() {
-  worldbuildingData.factions = document.getElementById('factionsContent').textContent;
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-}
-
-function renderAbilities() {
-  const container = document.getElementById('abilitiesList');
-  container.innerHTML = worldbuildingData.abilities.map((a, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
-      <button onclick="deleteAbility(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="flex items-center gap-3 mb-2">
-        <span class="text-indigo-400 font-bold" contenteditable="true" onblur="updateAbility(${i},'name',this.textContent)">${a.name}</span>
-        <span class="text-xs text-gray-500">持有者:</span>
-        <span class="text-sm text-gray-400" contenteditable="true" onblur="updateAbility(${i},'owner',this.textContent)">${a.owner}</span>
-      </div>
-      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateAbility(${i},'desc',this.textContent)">${a.desc}</div>
-      <div class="text-xs text-gray-500">限制: <span contenteditable="true" onblur="updateAbility(${i},'limit',this.textContent)">${a.limit}</span></div>
-      <div class="text-xs text-gray-500">代价: <span contenteditable="true" onblur="updateAbility(${i},'cost',this.textContent)">${a.cost}</span></div>
-    </div>
-  `).join('');
-}
-
-function updateAbility(i, field, val) {
-  worldbuildingData.abilities[i][field] = val;
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-}
-
-function addAbility() {
-  worldbuildingData.abilities.push({ name: '新能力', owner: '', desc: '', limit: '', cost: '' });
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderAbilities();
-  toast('已添加能力');
-}
-
-function deleteAbility(i) {
-  if (!confirm('确定删除该能力？')) return;
-  worldbuildingData.abilities.splice(i, 1);
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderAbilities();
-  toast('已删除');
-}
-
-function renderLocations() {
-  const container = document.getElementById('locationsList');
-  container.innerHTML = worldbuildingData.locations.map((l, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
-      <button onclick="deleteLocation(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="flex items-center gap-3 mb-2">
-        <span class="text-emerald-400 font-bold" contenteditable="true" onblur="updateLocation(${i},'name',this.textContent)">${l.name}</span>
-        <span class="text-xs text-gray-500">位置:</span>
-        <span class="text-sm text-gray-400" contenteditable="true" onblur="updateLocation(${i},'position',this.textContent)">${l.position}</span>
-      </div>
-      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateLocation(${i},'desc',this.textContent)">${l.desc}</div>
-      <div class="text-xs text-gray-500">关联事件: <span contenteditable="true" onblur="updateLocation(${i},'events',this.textContent)">${l.events}</span></div>
-    </div>
-  `).join('');
-}
-
-function updateLocation(i, field, val) {
-  worldbuildingData.locations[i][field] = val;
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-}
-
-function addLocation() {
-  worldbuildingData.locations.push({ name: '新地点', position: '', desc: '', events: '' });
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderLocations();
-  toast('已添加地点');
-}
-
-function deleteLocation(i) {
-  if (!confirm('确定删除该地点？')) return;
-  worldbuildingData.locations.splice(i, 1);
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderLocations();
-  toast('已删除');
-}
-
-function renderRules() {
-  const container = document.getElementById('rulesList');
-  container.innerHTML = worldbuildingData.rules.map((r, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
-      <button onclick="deleteRule(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="flex items-center gap-3 mb-2">
-        <span class="text-amber-400 font-bold" contenteditable="true" onblur="updateRule(${i},'name',this.textContent)">${r.name}</span>
-      </div>
-      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updateRule(${i},'desc',this.textContent)">${r.desc}</div>
-      <div class="text-xs text-gray-500">影响: <span contenteditable="true" onblur="updateRule(${i},'impact',this.textContent)">${r.impact}</span></div>
-    </div>
-  `).join('');
-}
-
-function updateRule(i, field, val) {
-  worldbuildingData.rules[i][field] = val;
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-}
-
-function addRule() {
-  worldbuildingData.rules.push({ name: '新规则', desc: '', impact: '' });
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderRules();
-  toast('已添加规则');
-}
-
-function deleteRule(i) {
-  if (!confirm('确定删除该规则？')) return;
-  worldbuildingData.rules.splice(i, 1);
-  save(LS_KEYS.worldbuilding, worldbuildingData);
-  renderRules();
-  toast('已删除');
-}
-
-// ===== PATCHES =====
-function getDefaultPatches() {
-  return {
-    patches: [
-      { location: 'ch06', type: '情节补充', status: '已完成', desc: '赵小吏+孟舟出场已添加', detail: '' },
-      { location: 'ch14.5', type: '情节补充', status: '已完成', desc: '陆执灯交易新场景已添加', detail: '' },
-      { location: 'ch16', type: '情节补充', status: '已完成', desc: '陆执灯擦肩已添加', detail: '' },
-      { location: 'ch18', type: '情节补充', status: '已完成', desc: '陆执灯递沈怀纸条已添加', detail: '' },
-      { location: 'ch19', type: '世界观补充', status: '已完成', desc: '下湾描写已添加', detail: '' }
-    ],
-    todos: [
-      { text: 'ch11-13加轻松日常', done: false },
-      { text: 'ch24加陆执灯出场', done: false },
-      { text: 'ch27-28加陆执灯', done: false },
-      { text: '老孟个人戏', done: false },
-      { text: '杜衡提前铺垫', done: false }
-    ],
-    versions: [
-      { label: 'v4', desc: '初版32章' },
-      { label: 'v5', desc: 'ch15-28重写' },
-      { label: 'v6', desc: '加陆执灯+世界观+群像+轻松' }
-    ]
-  };
-}
-
-function renderPatches() {
-  renderPatchesList();
-  renderTodos();
-  renderVersions();
-}
-
-function renderPatchesList() {
-  const container = document.getElementById('patchesList');
-  const statusColors = { '待处理': 'bg-yellow-900/50 text-yellow-300', '进行中': 'bg-blue-900/50 text-blue-300', '已完成': 'bg-green-900/50 text-green-300' };
-  const typeColors = { 'bug修复': 'text-red-400', '情节补充': 'text-emerald-400', '对话优化': 'text-blue-400', '世界观补充': 'text-purple-400', '风格调整': 'text-amber-400' };
-  container.innerHTML = patchesData.patches.map((p, i) => `
-    <div class="bg-[#111128] rounded-xl p-5 border border-gray-800 relative group">
-      <button onclick="deletePatch(${i})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-sm transition">✕</button>
-      <div class="flex items-center gap-3 mb-2 flex-wrap">
-        <span class="text-sm font-bold text-gray-200" contenteditable="true" onblur="updatePatch(${i},'location',this.textContent)">${p.location}</span>
-        <select onchange="updatePatch(${i},'type',this.value)" class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs ${typeColors[p.type]||'text-gray-400'} focus:outline-none focus:border-indigo-500">
-          <option value="bug修复" ${p.type==='bug修复'?'selected':''}>bug修复</option>
-          <option value="情节补充" ${p.type==='情节补充'?'selected':''}>情节补充</option>
-          <option value="对话优化" ${p.type==='对话优化'?'selected':''}>对话优化</option>
-          <option value="世界观补充" ${p.type==='世界观补充'?'selected':''}>世界观补充</option>
-          <option value="风格调整" ${p.type==='风格调整'?'selected':''}>风格调整</option>
-        </select>
-        <select onchange="updatePatch(${i},'status',this.value)" class="px-2 py-1 text-xs rounded ${statusColors[p.status]||''} focus:outline-none focus:border-indigo-500 border border-gray-700 bg-gray-800">
-          <option value="待处理" ${p.status==='待处理'?'selected':''}>待处理</option>
-          <option value="进行中" ${p.status==='进行中'?'selected':''}>进行中</option>
-          <option value="已完成" ${p.status==='已完成'?'selected':''}>已完成</option>
-        </select>
-      </div>
-      <div class="text-sm text-gray-300 mb-2" contenteditable="true" onblur="updatePatch(${i},'desc',this.textContent)">${p.desc}</div>
-      <div class="text-xs text-gray-500" contenteditable="true" onblur="updatePatch(${i},'detail',this.textContent)">${p.detail||'详细内容...'}</div>
-    </div>
-  `).join('');
-}
-
-function updatePatch(i, field, val) {
-  patchesData.patches[i][field] = val;
-  save(LS_KEYS.patches, patchesData);
-  if (field === 'type' || field === 'status') renderPatchesList();
-}
-
-function addPatch() {
-  patchesData.patches.push({ location: '', type: '情节补充', status: '待处理', desc: '', detail: '' });
-  save(LS_KEYS.patches, patchesData);
-  renderPatchesList();
-  toast('已添加补丁');
-}
-
-function deletePatch(i) {
-  if (!confirm('确定删除该补丁？')) return;
-  patchesData.patches.splice(i, 1);
-  save(LS_KEYS.patches, patchesData);
-  renderPatchesList();
-  toast('已删除');
-}
-
-function renderTodos() {
-  const container = document.getElementById('todosList');
-  container.innerHTML = patchesData.todos.map((t, i) => `
-    <div class="flex items-center gap-3 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
-      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})" class="w-4 h-4 rounded cursor-pointer accent-indigo-500">
-      <div class="flex-1 text-sm ${t.done?'text-gray-500 line-through':'text-gray-300'} focus:outline-none" contenteditable="true" onblur="updateTodo(${i},this.textContent)">${t.text}</div>
-      <button onclick="deleteTodo(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
-    </div>
-  `).join('');
-}
-
-function toggleTodo(i) {
-  patchesData.todos[i].done = !patchesData.todos[i].done;
-  save(LS_KEYS.patches, patchesData);
-  renderTodos();
-}
-
-function updateTodo(i, val) {
-  patchesData.todos[i].text = val;
-  save(LS_KEYS.patches, patchesData);
-}
-
-function addTodo() {
-  patchesData.todos.push({ text: '新待办', done: false });
-  save(LS_KEYS.patches, patchesData);
-  renderTodos();
-  toast('已添加待办');
-}
-
-function deleteTodo(i) {
-  patchesData.todos.splice(i, 1);
-  save(LS_KEYS.patches, patchesData);
-  renderTodos();
-  toast('已删除');
-}
-
-function renderVersions() {
-  const container = document.getElementById('versionsList');
-  container.innerHTML = patchesData.versions.map((v, i) => `
-    <div class="flex items-center gap-3 bg-[#111128] rounded-lg p-3 border border-gray-800 group">
-      <span class="text-indigo-400 font-bold text-sm" contenteditable="true" onblur="updateVersion(${i},'label',this.textContent)">${v.label}</span>
-      <span class="text-gray-600">:</span>
-      <div class="flex-1 text-sm text-gray-300 focus:outline-none" contenteditable="true" onblur="updateVersion(${i},'desc',this.textContent)">${v.desc}</div>
-      <button onclick="deleteVersion(${i})" class="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover:opacity-100 transition">✕</button>
-    </div>
-  `).join('');
-}
-
-function updateVersion(i, field, val) {
-  patchesData.versions[i][field] = val;
-  save(LS_KEYS.patches, patchesData);
-}
-
-function addVersion() {
-  patchesData.versions.push({ label: 'v' + (patchesData.versions.length + 4), desc: '' });
-  save(LS_KEYS.patches, patchesData);
-  renderVersions();
-  toast('已添加版本');
-}
-
-function deleteVersion(i) {
-  patchesData.versions.splice(i, 1);
-  save(LS_KEYS.patches, patchesData);
-  renderVersions();
-  toast('已删除');
-}
-
-// Init
-initData();
+loadData();
 </script>
 </body>
 </html>
