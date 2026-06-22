@@ -15,8 +15,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
-body{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",serif;background-color:#0a0a0f;background-image:radial-gradient(ellipse at 15% 0%,rgba(72,45,115,.18),transparent 38%),radial-gradient(ellipse at 90% 35%,rgba(43,65,82,.12),transparent 34%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");padding-bottom:0}
 button,input,select{font:inherit}
 #readingProgress{position:fixed;left:0;top:0;width:0;height:3px;background:linear-gradient(90deg,#6d28d9,#a78bfa);box-shadow:0 0 12px #8b5cf6;z-index:100;transition:width .12s linear}
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -85,7 +83,7 @@ button,input,select{font:inherit}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 /* 黛墨、宣纸、朱砂：全站中国风暗色视觉层 */
 :root{--ink:#0c0e0f;--paper:#151814;--paper-2:#1c1f1a;--line:#3a3d34;--text:#e0d8c4;--muted:#9a9688;--cinnabar:#c45a3c;--gold:#c9a86c;--jade:#6a9080}
-body{color:var(--text);background-color:var(--ink);background-image:radial-gradient(ellipse at 15% 5%,rgba(140,65,40,.22),transparent 45%),radial-gradient(ellipse at 85% 30%,rgba(80,115,95,.16),transparent 40%),radial-gradient(ellipse at 50% 80%,rgba(60,50,35,.1),transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E")}
+body{color:var(--text);background-color:var(--ink);min-height:100vh;background-image:radial-gradient(ellipse at 15% 5%,rgba(140,65,40,.22),transparent 45%),radial-gradient(ellipse at 85% 30%,rgba(80,115,95,.16),transparent 40%),radial-gradient(ellipse at 50% 80%,rgba(60,50,35,.1),transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E")}
 #readingProgress{background:linear-gradient(90deg,#6e2e22,var(--cinnabar),#c68668);box-shadow:0 0 10px rgba(168,71,50,.65)}
 #topNav{background:rgba(9,12,11,.94)!important;border-color:#292c27!important;backdrop-filter:blur(16px)}
 .nav-tab.active{color:#eee6d4;border-bottom-color:var(--cinnabar)}.nav-tab:hover{color:#eee6d4}
