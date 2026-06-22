@@ -1,0 +1,11 @@
+{
+  "name": "人间仍存",
+  "short_name": "人间仍存",
+  "description": "《人间仍存》沉浸式中文阅读与作品设定站",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090b0b",
+  "theme_color": "#090b0b"
+}

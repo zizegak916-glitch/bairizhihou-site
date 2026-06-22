@@ -4,11 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>人间仍存</title>
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="《人间仍存》沉浸式中文阅读与作品设定站">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
+body{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",serif;background-color:#0a0a0f;background-image:radial-gradient(ellipse at 15% 0%,rgba(72,45,115,.18),transparent 38%),radial-gradient(ellipse at 90% 35%,rgba(43,65,82,.12),transparent 34%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");padding-bottom:0}
+button,input,select{font:inherit}
+#readingProgress{position:fixed;left:0;top:0;width:0;height:3px;background:linear-gradient(90deg,#6d28d9,#a78bfa);box-shadow:0 0 12px #8b5cf6;z-index:100;transition:width .12s linear}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:#0a0a0f}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
@@ -40,9 +50,9 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
 .outline-content{font-size:16px;line-height:1.9;color:#c4c4c4;max-width:750px;margin:0 auto}
 .outline-content p{margin-bottom:.8em}
 .document-content{font-size:16px;line-height:1.85;color:#c4c4c4;max-width:850px;margin:0 auto}
-.document-content h1{font-size:24px;color:#a78bfa;text-align:center;margin:0 0 24px}
-.document-content h2{font-size:19px;color:#8b5cf6;margin:28px 0 14px;padding-left:10px;border-left:3px solid #8b5cf6}
-.document-content h3{font-size:17px;color:#e9d5ff;margin:22px 0 10px}
+.document-content h1{font-size:24px;color:#c49b72;text-align:center;margin:0 0 24px}
+.document-content h2{font-size:19px;color:#b76048;margin:28px 0 14px;padding-left:10px;border-left:3px solid #a84732}
+.document-content h3{font-size:17px;color:#d8c2a0;margin:22px 0 10px}
 .document-content p{margin:0 0 10px}
 .document-content ul{margin:0 0 16px 1.4em;color:#b8b8c8}
 .document-content li{margin-bottom:7px}
@@ -51,17 +61,48 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
 .patch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr));gap:18px;align-items:start}
 .patch-card{background:#111128;border:1px solid #292944;border-radius:12px;padding:22px}
 .load-error{max-width:700px;margin:40px auto;padding:20px;border:1px solid #7f1d1d;background:#2a1118;color:#fca5a5;border-radius:10px}
+.reader-toolbar{position:sticky;top:59px;z-index:35;display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:12px;background:rgba(10,10,20,.9);border:1px solid #242440;border-radius:10px;backdrop-filter:blur(14px)}
+.tool-btn{border:1px solid #30304c;background:#16162d;color:#aaa;border-radius:7px;padding:7px 10px;cursor:pointer;white-space:nowrap}.tool-btn:hover,.tool-btn.active{color:#fff;border-color:#8b5cf6;background:#242044}
+.font-slider{accent-color:#8b5cf6;width:100px}
+.ink-label{font-size:12px;color:#777;white-space:nowrap}
+.reader-meta{display:flex;justify-content:center;gap:14px;color:#68687d;font-size:12px;margin-bottom:22px}
+.chain-panel{max-width:700px;margin:28px auto 4px;padding:16px 18px;background:linear-gradient(135deg,rgba(17,17,40,.95),rgba(21,16,43,.9));border:1px solid #29294a;border-radius:12px}
+.chain-track{display:flex;gap:5px;margin-top:12px}.chain-node{height:5px;flex:1;background:#29293d;border-radius:4px}.chain-node.done{background:#8b5cf6;box-shadow:0 0 7px #8b5cf677}.chain-node.current{background:#c4b5fd}
+.modal{position:fixed;inset:0;z-index:110;display:none;align-items:flex-start;justify-content:center;padding:12vh 16px 30px;background:rgba(3,3,8,.78);backdrop-filter:blur(8px)}.modal.open{display:flex}
+.modal-card{width:min(680px,100%);max-height:72vh;overflow:auto;background:#111128;border:1px solid #35355c;border-radius:14px;box-shadow:0 24px 80px #000;padding:18px}
+.search-input{width:100%;background:#090914;border:1px solid #343452;color:#eee;border-radius:9px;padding:13px 15px;outline:none}.search-input:focus{border-color:#8b5cf6;box-shadow:0 0 0 3px #8b5cf622}
+.search-result{padding:12px;border-bottom:1px solid #24243b;cursor:pointer;border-radius:7px}.search-result:hover,.search-result.selected{background:#1d1d39}.search-snippet{font-size:12px;color:#777;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.search-result mark{background:#8b5cf644;color:#ddd}
+.term-row{padding:13px 4px;border-bottom:1px solid #24243b}.term-name{color:#c4b5fd;font-weight:700;margin-bottom:5px}.term-desc{font-size:13px;line-height:1.7;color:#aaa}
+.toast{position:fixed;left:50%;bottom:82px;z-index:130;transform:translate(-50%,20px);opacity:0;background:#252542;border:1px solid #4c3d78;color:#eee;padding:9px 15px;border-radius:99px;font-size:13px;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+.bottom-nav{display:none}.plain-reading #topNav,.plain-reading .desktop-sidebar,.plain-reading #mobileDropdown,.plain-reading .reader-toolbar,.plain-reading #chapterNav,.plain-reading .chain-panel,.plain-reading .bottom-nav{display:none!important}.plain-reading main{max-width:780px}.plain-reading .chapter-content{max-width:720px}.plain-reading{background-image:none}.plain-reading #panel-chapters>div{display:block!important}
+.kbd{font-family:ui-monospace,monospace;font-size:10px;color:#666;border:1px solid #33334b;border-radius:4px;padding:1px 4px}
 @media(max-width:480px){
   main{padding:12px!important}
   .patch-card{padding:16px}
   .document-content h1{font-size:21px}
 }
+@media(max-width:767px){body{padding-bottom:66px}.reader-toolbar{top:52px;overflow-x:auto;border-radius:8px}.reader-toolbar .font-family-select{display:none}.bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:0;right:0;bottom:0;z-index:70;height:62px;background:rgba(12,12,25,.96);border-top:1px solid #282842;backdrop-filter:blur(16px);padding-bottom:env(safe-area-inset-bottom)}.bottom-btn{border:0;background:none;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.bottom-btn span{font-size:18px}.bottom-btn.active{color:#a78bfa}.chapter-content{padding:12px 5px}.card:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+/* 黛墨、宣纸、朱砂：全站中国风暗色视觉层 */
+:root{--ink:#090b0b;--paper:#111412;--paper-2:#171a16;--line:#34362d;--text:#d8d0bd;--muted:#817d70;--cinnabar:#a84732;--gold:#b59a62;--jade:#567568}
+body{color:var(--text);background-color:var(--ink);background-image:radial-gradient(ellipse at 18% 0%,rgba(127,58,42,.13),transparent 38%),radial-gradient(ellipse at 88% 28%,rgba(75,105,91,.1),transparent 34%),linear-gradient(rgba(9,11,11,.88),rgba(9,11,11,.96)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.5' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E")}
+#readingProgress{background:linear-gradient(90deg,#6e2e22,var(--cinnabar),#c68668);box-shadow:0 0 10px rgba(168,71,50,.65)}
+#topNav{background:rgba(9,12,11,.94)!important;border-color:#292c27!important;backdrop-filter:blur(16px)}
+.nav-tab.active{color:#eee6d4;border-bottom-color:var(--cinnabar)}.nav-tab:hover{color:#eee6d4}
+.card,.patch-card{background:linear-gradient(145deg,rgba(20,23,20,.96),rgba(13,16,15,.96));border-color:var(--line);border-radius:4px}.stat-card{background:linear-gradient(135deg,#121613,#191a16);border-color:var(--line);border-radius:4px}
+.reader-toolbar{background:rgba(12,15,14,.92);border-color:var(--line);border-radius:4px}.tool-btn,.chapter-nav-btn,.copy-btn{background:#161916;border-color:#393b32;color:#aaa496;border-radius:3px}.tool-btn:hover,.tool-btn.active,.chapter-nav-btn:hover,.copy-btn:hover{background:#24251f;border-color:var(--cinnabar);color:#eee6d4}.font-slider{accent-color:var(--cinnabar)}
+.chapter-content{color:#d8d0bd}.chapter-content h1{color:#eee6d4!important;letter-spacing:.12em}.reader-meta{color:#777467}.chain-panel{background:linear-gradient(135deg,rgba(25,24,19,.97),rgba(15,20,18,.94));border-color:#3a392f;border-radius:4px}.chain-node{background:#33352e}.chain-node.done{background:var(--cinnabar);box-shadow:0 0 7px rgba(168,71,50,.55)}.chain-node.current{background:#d2a27e}
+.modal{background:rgba(3,5,4,.82)}.modal-card{background:#121512;border-color:#47483c;border-radius:5px}.search-input{background:#0a0d0c;border-color:#404238;border-radius:3px}.search-input:focus{border-color:var(--cinnabar);box-shadow:0 0 0 3px rgba(168,71,50,.15)}.search-result:hover,.search-result.selected{background:#24251f}.search-result mark{background:rgba(168,71,50,.4);color:#f0e8d6}.term-name{color:#c49b72}.toast{background:#24251f;border-color:#65503c;border-radius:3px}.bottom-nav{background:rgba(10,13,12,.97)!important;border-color:#32342e!important}.bottom-btn.active{color:#c8795f!important}
+.seal{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;border:1px solid var(--cinnabar);color:#c66d55;font-size:12px;line-height:1;writing-mode:vertical-rl;letter-spacing:2px;transform:rotate(-2deg)}
+.shortcut-grid{display:grid;grid-template-columns:1fr auto;gap:12px 24px;padding:8px 2px;color:#aaa496}.shortcut-grid .kbd{color:#c4b08d;border-color:#46453a;padding:3px 7px}
+@media(max-width:767px){#topNav .top-search-label{display:none}.modal{padding-top:8vh}.modal-card{max-height:80vh}.reader-toolbar{scrollbar-width:none}.chapter-content{line-height:1.95}.seal{width:28px;height:28px}}
 </style>
 </head>
 <body>
+<div id="readingProgress" aria-hidden="true"></div>
 <nav id="topNav" style="position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#0a0a1a 0%,#111128 100%);border-bottom:1px solid #1e1e3a">
   <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center">
-    <div style="padding:12px 16px;font-size:18px;font-weight:bold;color:#8b5cf6;white-space:nowrap;font-family:serif">人间仍存</div>
+    <div style="padding:10px 14px;white-space:nowrap"><span class="seal" aria-label="人间仍存">人间</span></div>
     <div id="tabsContainer" style="display:flex;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none" class="no-scrollbar">
       <div class="nav-tab active" data-tab="overview">📊 概览</div>
       <div class="nav-tab" data-tab="chapters">📖 正文</div>
@@ -71,6 +112,8 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
       <div class="nav-tab" data-tab="outline">📋 大纲</div>
       <div class="nav-tab" data-tab="patches">🔧 补丁集</div>
     </div>
+    <button class="tool-btn" onclick="openSearch()" title="搜索章节（Ctrl+K）" style="margin-right:6px">⌕ <span class="top-search-label"><span class="kbd">Ctrl K</span></span></button>
+    <button class="tool-btn" onclick="openShortcuts()" title="快捷键（?）" style="margin-right:8px" aria-label="快捷键帮助">?</button>
   </div>
 </nav>
 
@@ -84,8 +127,31 @@ body{background:#0a0a0f;color:#d4d4d4;font-family:serif;min-height:100vh}
   <div id="panel-patches" class="tab-panel"></div>
 </main>
 
+<nav class="bottom-nav" aria-label="移动端导航">
+  <button class="bottom-btn active" data-mobile-tab="overview"><span>卷</span>概览</button>
+  <button class="bottom-btn" data-mobile-tab="chapters"><span>阅</span>正文</button>
+  <button class="bottom-btn" onclick="previousChapter()"><span>←</span>上章</button>
+  <button class="bottom-btn" onclick="nextChapter()"><span>→</span>下章</button>
+  <button class="bottom-btn" onclick="openTerms()"><span>典</span>术语</button>
+</nav>
+
+<div id="searchModal" class="modal" role="dialog" aria-modal="true" aria-label="章节搜索" onclick="closeOnBackdrop(event)">
+  <div class="modal-card"><input id="searchInput" class="search-input" placeholder="搜索章节标题或正文…" autocomplete="off"><div id="searchResults" style="margin-top:8px"></div></div>
+</div>
+<div id="termsModal" class="modal" role="dialog" aria-modal="true" aria-label="术语速查" onclick="closeOnBackdrop(event)">
+  <div class="modal-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 style="color:#eee;font-size:19px">术语速查</h2><button class="tool-btn" onclick="closeModals()">关闭</button></div><input id="termInput" class="search-input" placeholder="查找术语…"><div id="termResults"></div></div>
+</div>
+<div id="shortcutsModal" class="modal" role="dialog" aria-modal="true" aria-label="快捷键说明" onclick="closeOnBackdrop(event)">
+  <div class="modal-card" style="max-width:460px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 style="color:#eee6d4;font-size:19px">快捷键</h2><button class="tool-btn" onclick="closeModals()">关闭</button></div><div class="shortcut-grid"><span>搜索章节</span><span class="kbd">Ctrl / ⌘ K</span><span>上一章 / 下一章</span><span class="kbd">← / →</span><span>字号缩小 / 放大</span><span class="kbd">- / +</span><span>纯净阅读模式</span><span class="kbd">R</span><span>全屏</span><span class="kbd">F</span><span>术语速查</span><span class="kbd">T</span><span>关闭面板 / 退出阅读</span><span class="kbd">Esc</span></div></div>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
 <script>
-let chaptersData=[],contentData={},analysisData={},outlineText='',patchDocuments=[],currentChapter=0,chartInstance=null;
+const STORAGE_KEY='renjian-reader-v3';
+const defaultReaderState={chapter:0,activeTab:'overview',fontSize:18,fontFamily:'song',plain:false,readChapters:[],seconds:0,lastScroll:0};
+function loadReaderState(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||localStorage.getItem('renjian-reader-v2')||'{}');return Object.assign({},defaultReaderState,saved,{readChapters:Array.isArray(saved.readChapters)?saved.readChapters:[]})}catch(error){console.warn('阅读记录损坏，已使用默认设置',error);return {...defaultReaderState}}}
+const readerState=loadReaderState();
+let chaptersData=[],contentData={},analysisData={},outlineText='',patchDocuments=[],currentChapter=readerState.chapter||0,chartInstance=null,activeTab='overview',sessionStarted=Date.now(),searchSelection=0;
 
 async function loadData(){
   try{
@@ -117,7 +183,7 @@ function escapeHtml(value){
 }
 
 function inlineMarkdown(value){
-  return escapeHtml(value).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="color:#c4b5fd">$1</code>');
+  return escapeHtml(value).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="color:#c49b72">$1</code>');
 }
 
 function renderDocument(text){
@@ -151,6 +217,9 @@ function renderAll(){
   renderWorld();
   renderOutline();
   renderPatches();
+  applyReaderPreferences();
+  renderTerms();
+  restoreLocation();
 }
 
 function renderOverview(){
@@ -162,10 +231,14 @@ function renderOverview(){
 
   let html=`
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
-    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#8b5cf6">${chapterCount}</div><div style="font-size:13px;color:#888;margin-top:4px">总章数</div></div>
+    <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#b76048">${chapterCount}</div><div style="font-size:13px;color:#888;margin-top:4px">总章数</div></div>
     <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#3498db">${totalChars.toLocaleString()}</div><div style="font-size:13px;color:#888;margin-top:4px">总字数(含标点)</div></div>
     <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#2ecc71">${avgChars.toLocaleString()}</div><div style="font-size:13px;color:#888;margin-top:4px">平均每章字数</div></div>
     <div class="stat-card"><div style="font-size:32px;font-weight:bold;color:#e74c3c">${charCount}</div><div style="font-size:13px;color:#888;margin-top:4px">人物/势力</div></div>
+  </div>
+  <div class="card" style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+    <div><div style="color:#c49b72;font-weight:700;margin-bottom:5px">我的阅读</div><div style="font-size:13px;color:#777">进度自动保存在当前设备</div></div>
+    <div style="display:flex;gap:28px"><div><b style="font-size:22px;color:#eee">${readerState.readChapters.length}</b><div style="font-size:11px;color:#666">已读章节</div></div><div><b style="font-size:22px;color:#eee">${formatDuration(readerState.seconds)}</b><div style="font-size:11px;color:#666">阅读时长</div></div><div><b style="font-size:22px;color:#eee">${Math.round(readerState.readChapters.length/Math.max(1,chapterCount)*100)}%</b><div style="font-size:11px;color:#666">完成度</div></div></div>
   </div>
   <div class="card" style="margin-bottom:24px">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px;color:#fff">📊 各章字数分布</div>
@@ -189,7 +262,7 @@ function renderOverview(){
     const ctx=chartCanvas.getContext('2d');
     chartInstance=new Chart(ctx,{
       type:'bar',
-      data:{labels,datasets:[{label:'字数',data:values,backgroundColor:'rgba(139,92,246,0.6)',borderColor:'rgba(139,92,246,1)',borderWidth:1,borderRadius:3}]},
+      data:{labels,datasets:[{label:'字数',data:values,backgroundColor:'rgba(168,71,50,0.62)',borderColor:'rgba(198,109,85,1)',borderWidth:1,borderRadius:3}]},
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+' 字'}}},
@@ -237,7 +310,7 @@ function renderChapters(){
   panel.innerHTML=`
   <div style="display:flex;gap:16px;align-items:flex-start">
     <div id="chapterSidebar" style="width:260px;flex-shrink:0;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto;background:#0d0d1a;border-radius:12px;border:1px solid #1e1e3a;padding:8px" class="desktop-sidebar">
-      <div style="padding:8px 16px;font-size:14px;font-weight:600;color:#8b5cf6;margin-bottom:4px">目录 (${chaptersData.length}章)</div>
+      <div style="padding:8px 16px;font-size:14px;font-weight:600;color:#b76048;margin-bottom:4px">目录 (${chaptersData.length}章)</div>
       ${listHtml}
     </div>
     <div id="mobileDropdown" style="display:none;width:100%;margin-bottom:16px">
@@ -246,11 +319,19 @@ function renderChapters(){
       </select>
     </div>
     <div style="flex:1;min-width:0">
+      <div class="reader-toolbar" aria-label="阅读设置">
+        <button class="tool-btn" onclick="openSearch()">⌕ 搜索</button>
+        <button class="tool-btn" onclick="openTerms()">典 术语</button>
+        <button id="plainModeBtn" class="tool-btn" onclick="togglePlainMode()">素 阅读模式</button>
+        <span class="ink-label">字号</span><input id="fontSizeRange" class="font-slider" type="range" min="15" max="26" step="1" value="${readerState.fontSize}" oninput="setFontSize(this.value)" aria-label="正文字号">
+        <select class="tool-btn font-family-select" onchange="setFontFamily(this.value)" aria-label="阅读字体"><option value="song" ${readerState.fontFamily==='song'?'selected':''}>思源宋体</option><option value="wenkai" ${readerState.fontFamily==='wenkai'?'selected':''}>霞鹜文楷</option></select>
+        <button class="tool-btn" onclick="toggleFullscreen()" title="全屏（F）">⛶ 全屏</button>
+      </div>
       <div id="chapterDisplay"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding:0 16px;flex-wrap:wrap;gap:8px" id="chapterNav"></div>
     </div>
   </div>`;
-  selectChapter(currentChapter);
+  selectChapter(currentChapter,true);
   updateSidebarVisibility();
   window.addEventListener('resize',updateSidebarVisibility);
 }
@@ -268,7 +349,8 @@ function updateSidebarVisibility(){
   }
 }
 
-function selectChapter(idx){
+function selectChapter(idx,preserveScroll=false){
+  idx=Math.max(0,Math.min(chaptersData.length-1,Number(idx)||0));
   currentChapter=idx;
   const ch=chaptersData[idx];
   if(!ch)return;
@@ -278,15 +360,19 @@ function selectChapter(idx){
   const paragraphs=body.split('\n').filter(p=>p.trim());
   let contentHtml='<div class="chapter-content">';
   contentHtml+=`<h1 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;text-indent:0;font-family:serif;text-align:center">第${num}章 ${ch.title}</h1>`;
-  contentHtml+=`<div style="text-align:center;margin-bottom:24px"><button class="copy-btn" onclick="copyChapter(${idx})" id="copyBtn${idx}">📋 复制本章</button> <button class="copy-btn" onclick="copyAllChapters()">📄 复制全文</button></div>`;
+  const chars=ch.chars_with_punct||body.length;
+  const minutes=Math.max(1,Math.ceil(chars/450));
+  contentHtml+=`<div class="reader-meta"><span>${chars.toLocaleString()} 字</span><span>约 ${minutes} 分钟</span><span>第 ${num} / ${chaptersData.length} 章</span></div>`;
+  contentHtml+=`<div class="reader-actions" style="text-align:center;margin-bottom:24px"><button class="copy-btn" onclick="copyChapter(${idx})" id="copyBtn${idx}">复制本章</button> <button class="copy-btn" onclick="copyAllChapters()">复制全文</button></div>`;
   for(const p of paragraphs){
     if(p.startsWith('第')&&p.includes('章')){
-      contentHtml+=`<p style="text-indent:0;color:#8b5cf6;font-weight:600;font-size:19px;margin-bottom:16px;text-align:center">${escapeHtml(p)}</p>`;
+      contentHtml+=`<p style="text-indent:0;color:#b76048;font-weight:600;font-size:19px;margin-bottom:16px;text-align:center">${escapeHtml(p)}</p>`;
     }else{
       contentHtml+=`<p>${escapeHtml(p)}</p>`;
     }
   }
   contentHtml+='</div>';
+  contentHtml+=renderHumanChain(idx);
   display.innerHTML=contentHtml;
 
   const nav=document.getElementById('chapterNav');
@@ -303,8 +389,22 @@ function selectChapter(idx){
 
   const sel=document.getElementById('chapterSelect');
   if(sel)sel.value=idx;
+  readerState.chapter=idx;
+  if(!readerState.readChapters.includes(idx))readerState.readChapters.push(idx);
+  if(!preserveScroll)readerState.lastScroll=0;
+  saveReaderState();
+  applyReaderPreferences();
+  if(activeTab==='chapters')display.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
-  display.scrollIntoView({behavior:'smooth',block:'start'});
+function renderHumanChain(idx){
+  const chains=[
+    {chapter:5,title:'无声的拥抱'},{chapter:18,title:'最后的一根烟'},{chapter:40,title:'雨中的伞'},{chapter:88,title:'名字的刻痕'},
+    {chapter:95,title:'假账里的真话'},{chapter:130,title:'断手的传递'},{chapter:145,title:'盲人的眼'},{chapter:160,title:'面摊'},{chapter:170,title:'遗书朗读'},{chapter:180,title:'消失的合影'}
+  ];
+  const reached=chains.filter(item=>item.chapter<=idx+1).length;
+  const next=chains[reached];
+  return `<aside class="chain-panel"><div style="display:flex;justify-content:space-between;gap:12px"><div><div style="color:#c49b72;font-weight:700">人间链 · ${reached}/10</div><div style="color:#777;font-size:12px;margin-top:4px">${next?`下一锚点：第${next.chapter}章 · ${next.title}`:'十链已成，人间仍存'}</div></div><div style="color:#745044;font-size:24px">链</div></div><div class="chain-track">${chains.map((item,i)=>`<span class="chain-node ${i<reached?'done':''} ${item.chapter===idx+1?'current':''}" title="第${item.chapter}章 · ${item.title}"></span>`).join('')}</div></aside>`;
 }
 
 function stripChapterHeading(content){
@@ -373,7 +473,7 @@ function renderRelations(){
       <div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1;height:2px;background:linear-gradient(90deg,${fromC.color},${toC.color});border-radius:1px"></div>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:#555">强度: <span style="color:#8b5cf6;font-family:monospace">${strengthBar}</span></div>
+      <div style="margin-top:8px;font-size:12px;color:#555">强度: <span style="color:#b76048;font-family:monospace">${strengthBar}</span></div>
       ${r.type?`<div style="margin-top:4px;font-size:11px;color:#444">类型: ${r.type}</div>`:''}
     </div>`;
   }
@@ -417,16 +517,98 @@ function renderPatches(){
     </section>`).join('')}</div>`;
 }
 
-document.querySelectorAll('.nav-tab').forEach(tab=>{
-  tab.addEventListener('click',function(){
-    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-    this.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    const panel=document.getElementById('panel-'+this.dataset.tab);
-    if(panel)panel.classList.add('active');
-    if(this.dataset.tab==='chapters')updateSidebarVisibility();
-  });
+function switchTab(name){
+  activeTab=name;
+  readerState.activeTab=name;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
+  document.querySelectorAll('.bottom-btn[data-mobile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.mobileTab===name));
+  if(name==='chapters')updateSidebarVisibility();
+  saveReaderState();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav-tab').forEach(tab=>tab.addEventListener('click',()=>switchTab(tab.dataset.tab)));
+document.querySelectorAll('.bottom-btn[data-mobile-tab]').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.mobileTab)));
+
+function saveReaderState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(readerState))}catch(error){console.warn('无法保存阅读记录',error)}}
+function formatDuration(seconds){const mins=Math.floor((seconds||0)/60);return mins<60?`${mins} 分钟`:`${Math.floor(mins/60)}时${mins%60}分`}
+function applyReaderPreferences(){
+  document.documentElement.style.setProperty('--reader-size',readerState.fontSize+'px');
+  document.querySelectorAll('.chapter-content').forEach(el=>{el.style.fontSize=readerState.fontSize+'px';el.style.fontFamily=readerState.fontFamily==='wenkai'?`"LXGW WenKai","霞鹜文楷",serif`:`"Noto Serif SC","Source Han Serif SC",serif`});
+  document.body.classList.toggle('plain-reading',!!readerState.plain);
+  const btn=document.getElementById('plainModeBtn');if(btn)btn.classList.toggle('active',!!readerState.plain);
+}
+function setFontSize(value){readerState.fontSize=Number(value);applyReaderPreferences();saveReaderState()}
+function adjustFontSize(delta){const next=Math.max(15,Math.min(26,readerState.fontSize+delta));setFontSize(next);const range=document.getElementById('fontSizeRange');if(range)range.value=next;showToast(`正文字号 ${next}px`)}
+function setFontFamily(value){readerState.fontFamily=value;applyReaderPreferences();saveReaderState()}
+function togglePlainMode(){readerState.plain=!readerState.plain;applyReaderPreferences();saveReaderState();showToast(readerState.plain?'已进入纯文本阅读，按 Esc 返回':'已退出阅读模式')}
+function previousChapter(){if(!chaptersData.length)return;switchTab('chapters');selectChapter(currentChapter-1)}
+function nextChapter(){if(!chaptersData.length)return;switchTab('chapters');selectChapter(currentChapter+1)}
+async function toggleFullscreen(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){showToast('当前浏览器不支持全屏')}}
+
+function updateReadingProgress(){
+  let percent=0;
+  if(activeTab==='chapters'){
+    const content=document.querySelector('#chapterDisplay .chapter-content');
+    if(content){const rect=content.getBoundingClientRect(),travel=Math.max(1,content.offsetHeight-window.innerHeight);percent=Math.max(0,Math.min(1,-rect.top/travel));readerState.lastScroll=percent}
+  }else{const max=document.documentElement.scrollHeight-window.innerHeight;percent=max>0?window.scrollY/max:0}
+  document.getElementById('readingProgress').style.width=(percent*100)+'%';
+}
+let scrollSaveTimer;
+window.addEventListener('scroll',()=>{updateReadingProgress();clearTimeout(scrollSaveTimer);scrollSaveTimer=setTimeout(saveReaderState,250)},{passive:true});
+
+function openSearch(){closeModals();const modal=document.getElementById('searchModal');modal.classList.add('open');const input=document.getElementById('searchInput');input.value='';renderSearchResults('');setTimeout(()=>input.focus(),20)}
+function renderSearchResults(query){
+  const q=query.trim().toLowerCase();
+  const results=chaptersData.map((ch,i)=>({ch,i,text:stripChapterHeading(ch.content).replace(/\s+/g,' ')})).filter(x=>!q||x.ch.title.toLowerCase().includes(q)||x.text.toLowerCase().includes(q)).slice(0,30);
+  searchSelection=0;
+  document.getElementById('searchResults').innerHTML=results.length?results.map((x,n)=>{const pos=q?x.text.toLowerCase().indexOf(q):-1;const snippet=pos>=0?x.text.slice(Math.max(0,pos-28),pos+q.length+48):x.text.slice(0,75);return `<div class="search-result ${n===0?'selected':''}" data-search-idx="${x.i}" onclick="goSearchResult(${x.i})"><div style="color:#eee">第${x.i+1}章 · ${highlight(x.ch.title,q)}</div><div class="search-snippet">${highlight(snippet,q)}</div></div>`}).join(''):'<div style="padding:24px;text-align:center;color:#666">没有找到相关章节</div>';
+}
+function highlight(text,q){const safe=escapeHtml(text);if(!q)return safe;const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return safe.replace(new RegExp(escaped,'ig'),m=>`<mark>${m}</mark>`)}
+function goSearchResult(idx){closeModals();switchTab('chapters');selectChapter(idx)}
+function moveSearchSelection(delta){const results=[...document.querySelectorAll('#searchResults .search-result')];if(!results.length)return;searchSelection=(searchSelection+delta+results.length)%results.length;results.forEach((el,i)=>el.classList.toggle('selected',i===searchSelection));results[searchSelection].scrollIntoView({block:'nearest'})}
+
+const fallbackTerms=[
+  ['账','记录即存在，历史本身的运作方式。'],['账位','一个人在历史中的位置；结算成果记在账位上。'],['结算','超额结果成立后，成果、能力与代价同时落下。'],['墨未干','追溯被改写之物的能力，代价是存在感持续被稀释。'],['补痕','续接被截断的账，但续接出的未必是原物。'],['候','墨未干的第三态，将暂时无法处理的债务悬置。'],['楔','冻结结算、阻止真账落笔的做假账手段。'],['排异','能力异物对身体、身份与存在造成的持续排斥。'],['清障小账','水衡司处理异常的小型结算流程，已成事实不可逆。'],['死法残免','绝墨发力后，从一次失败死法中留下的残缺豁免。']
+];
+function getTerms(){
+  const world=(analysisData.worldSettings||[]).flatMap(w=>{const items=[[w.name,w.desc]];for(const part of String(w.desc).split(/\s+/)){const m=part.match(/^([^：:]{1,12})[：:]{1,2}(.+)/);if(m)items.push([m[1],m[2]])}return items});
+  const map=new Map([...fallbackTerms,...world]);return [...map].map(([name,desc])=>({name,desc}));
+}
+function openTerms(){closeModals();document.getElementById('termsModal').classList.add('open');const input=document.getElementById('termInput');input.value='';renderTerms('');setTimeout(()=>input.focus(),20)}
+function openShortcuts(){closeModals();document.getElementById('shortcutsModal').classList.add('open')}
+function renderTerms(query=''){const host=document.getElementById('termResults');if(!host)return;const q=query.trim().toLowerCase();host.innerHTML=getTerms().filter(t=>!q||t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)).map(t=>`<div class="term-row"><div class="term-name">${escapeHtml(t.name)}</div><div class="term-desc">${escapeHtml(t.desc).replace(/：：/g,'：')}</div></div>`).join('')}
+function closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'))}
+function closeOnBackdrop(e){if(e.target.classList.contains('modal'))closeModals()}
+function showToast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');clearTimeout(el.timer);el.timer=setTimeout(()=>el.classList.remove('show'),1800)}
+
+document.getElementById('searchInput').addEventListener('input',e=>renderSearchResults(e.target.value));
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();moveSearchSelection(1)}else if(e.key==='ArrowUp'){e.preventDefault();moveSearchSelection(-1)}else if(e.key==='Enter'){e.preventDefault();const selected=document.querySelector('#searchResults .search-result.selected');if(selected)goSearchResult(+selected.dataset.searchIdx)}});
+document.getElementById('termInput').addEventListener('input',e=>renderTerms(e.target.value));
+document.addEventListener('keydown',e=>{
+  const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();return}
+  if(e.key==='Escape'){if(document.querySelector('.modal.open'))closeModals();else if(readerState.plain)togglePlainMode();else if(activeTab==='chapters')switchTab('overview');return}
+  if(typing)return;
+  if(e.key==='ArrowLeft'){e.preventDefault();previousChapter()}
+  if(e.key==='ArrowRight'){e.preventDefault();nextChapter()}
+  if(e.key.toLowerCase()==='f'){e.preventDefault();toggleFullscreen()}
+  if(e.key.toLowerCase()==='r'){e.preventDefault();if(activeTab!=='chapters')switchTab('chapters');togglePlainMode()}
+  if(e.key.toLowerCase()==='t'){e.preventDefault();openTerms()}
+  if(e.key==='?'||e.key==='/'){e.preventDefault();openShortcuts()}
+  if(e.key==='+'||e.key==='='){e.preventDefault();adjustFontSize(1)}
+  if(e.key==='-'||e.key==='_'){e.preventDefault();adjustFontSize(-1)}
 });
+
+let touchStartX=0,touchStartY=0;
+document.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX;touchStartY=e.changedTouches[0].screenY},{passive:true});
+document.addEventListener('touchend',e=>{if(activeTab!=='chapters'||document.querySelector('.modal.open'))return;const dx=e.changedTouches[0].screenX-touchStartX,dy=e.changedTouches[0].screenY-touchStartY;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4){dx<0?nextChapter():previousChapter()}},{passive:true});
+
+function restoreLocation(){const savedChapter=Math.max(0,Math.min(readerState.chapter,chaptersData.length-1)),savedScroll=Number(readerState.lastScroll)||0,savedTab=readerState.activeTab||'overview';currentChapter=savedChapter;switchTab(savedTab);if(savedTab==='chapters'){selectChapter(savedChapter,true);readerState.lastScroll=savedScroll;setTimeout(()=>{const content=document.querySelector('#chapterDisplay .chapter-content');if(content&&savedScroll){const travel=Math.max(1,content.offsetHeight-window.innerHeight);window.scrollTo({top:content.offsetTop+travel*savedScroll,behavior:'auto'});updateReadingProgress()}},150)}}
+setInterval(()=>{if(!document.hidden&&activeTab==='chapters'){readerState.seconds+=15;saveReaderState()}},15000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveReaderState()});
+window.addEventListener('beforeunload',saveReaderState);
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 loadData();
 </script>
