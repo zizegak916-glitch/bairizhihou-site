@@ -7,11 +7,12 @@
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="《人间仍存》沉浸式中文阅读与作品设定站">
 <meta name="color-scheme" content="dark">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23151814'/><text x='50' y='68' font-size='48' text-anchor='middle' fill='%23c45a3c' font-family='serif'>存</text></svg>">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 button,input,select{font:inherit}
@@ -78,7 +79,7 @@ button,input,select{font:inherit}
   .patch-card{padding:16px}
   .document-content h1{font-size:21px}
 }
-@media(max-width:767px){body{padding-bottom:66px}.reader-toolbar{top:52px;overflow-x:auto;border-radius:8px}.reader-toolbar .font-family-select{display:none}.bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:0;right:0;bottom:0;z-index:70;height:62px;background:rgba(12,12,25,.96);border-top:1px solid #282842;backdrop-filter:blur(16px);padding-bottom:env(safe-area-inset-bottom)}.bottom-btn{border:0;background:none;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:color .15s}.bottom-btn span{font-size:18px}.bottom-btn:active{color:#a78bfa}.bottom-btn.active{color:#a78bfa}.chapter-content{padding:12px 5px}.card:hover{transform:none}}
+@media(max-width:767px){body{padding-bottom:66px}.reader-toolbar{top:52px;overflow-x:auto;border-radius:8px}.reader-toolbar .font-family-select{display:none}.bottom-nav{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:0;right:0;bottom:0;z-index:70;height:62px;background:rgba(12,12,25,.96);border-top:1px solid #282842;backdrop-filter:blur(16px);padding-bottom:env(safe-area-inset-bottom)}.bottom-btn{border:0;background:none;color:#777;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.bottom-btn span{font-size:18px}.bottom-btn.active{color:#a78bfa}.chapter-content{padding:12px 5px}.card:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 /* 黛墨、宣纸、朱砂：全站中国风暗色视觉层 */
 :root{--ink:#0c0e0f;--paper:#151814;--paper-2:#1c1f1a;--line:#3a3d34;--text:#e0d8c4;--muted:#9a9688;--cinnabar:#c45a3c;--gold:#c9a86c;--jade:#6a9080}
@@ -148,55 +149,32 @@ const STORAGE_KEY='renjian-reader-v3';
 const defaultReaderState={chapter:0,activeTab:'overview',fontSize:18,fontFamily:'song',plain:false,readChapters:[],seconds:0,lastScroll:0};
 function loadReaderState(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||localStorage.getItem('renjian-reader-v2')||'{}');return Object.assign({},defaultReaderState,saved,{readChapters:Array.isArray(saved.readChapters)?saved.readChapters:[]})}catch(error){console.warn('阅读记录损坏，已使用默认设置',error);return {...defaultReaderState}}}
 const readerState=loadReaderState();
-let chaptersData=[],contentData={},analysisData={},outlineText='',patchDocuments=[],currentChapter=readerState.chapter||0,activeTab='overview',sessionStarted=Date.now(),searchSelection=0;
-const dataLoaded={chapters:false,content:false,analysis:false,outline:false};
+let chaptersData=[],contentData={},analysisData={},outlineText='',patchDocuments=[],currentChapter=readerState.chapter||0,chartInstance=null,activeTab='overview',sessionStarted=Date.now(),searchSelection=0;
 
-async function loadCoreData(){
+async function loadData(){
   try{
-    const [chaptersResp,analysisResp]=await Promise.all([
-      fetch('data/chapters.json'),fetch('data/analysis.json')
+    const urls=['data/chapters.json','data/content.json','data/analysis.json','_source/outline_v12.txt','_source/setting_correction.md','_source/setting_corrections_0619.md','_source/setting_mechanics.md'];
+    const responses=await Promise.all(urls.map(url=>fetch(url)));
+    responses.forEach((response,index)=>{if(!response.ok)throw new Error(`${urls[index]}: HTTP ${response.status}`)});
+    const [chapters,content,analysis,outline,...patches]=await Promise.all([
+      responses[0].json(),responses[1].json(),responses[2].json(),responses[3].text(),
+      responses[4].text(),responses[5].text(),responses[6].text()
     ]);
-    if(!chaptersResp.ok)throw new Error('chapters.json: HTTP '+chaptersResp.status);
-    if(!analysisResp.ok)throw new Error('analysis.json: HTTP '+analysisResp.status);
-    chaptersData=await chaptersResp.json();
-    analysisData=await analysisResp.json();
-    dataLoaded.chapters=true;
-    dataLoaded.analysis=true;
+    chaptersData=chapters;
+    contentData=content;
+    analysisData=analysis;
+    outlineText=outline;
+    patchDocuments=[
+      {title:'设定修正 · 账 = 历史',content:patches[0]},
+      {title:'设定修正记录 · 06/19',content:patches[1]},
+      {title:'能力机制铁律',content:patches[2]}
+    ];
     renderAll();
-    loadContentData();
   }catch(error){
-    console.error('核心数据加载失败',error);
-    document.getElementById('panel-overview').innerHTML='<div class="load-error">数据加载失败：'+escapeHtml(error.message)+'。请通过 HTTP 服务器打开本站。</div>';
+    console.error('数据加载失败',error);
+    document.getElementById('panel-overview').innerHTML=`<div class="load-error">数据加载失败：${escapeHtml(error.message)}。请通过 HTTP 服务器打开本站，而不是直接打开本地文件。</div>`;
   }
 }
-async function loadContentData(){
-  if(dataLoaded.content)return contentData;
-  try{
-    const resp=await fetch('data/content.json');
-    if(!resp.ok)throw new Error('content.json: HTTP '+resp.status);
-    contentData=await resp.json();
-    dataLoaded.content=true;
-    return contentData;
-  }catch(e){console.error('内容数据加载失败',e);return null}
-}
-async function loadOutlineData(){
-  if(dataLoaded.outline)return;
-  try{
-    const urls=['_source/outline_v12.txt','_source/setting_correction.md','_source/setting_corrections_0619.md','_source/setting_mechanics.md'];
-    const responses=await Promise.all(urls.map(url=>fetch(url)));
-    responses.forEach((r,i)=>{if(!r.ok)throw new Error(urls[i]+': HTTP '+r.status)});
-    const texts=await Promise.all(responses.map(r=>r.text()));
-    outlineText=texts[0];
-    patchDocuments=[
-      {title:'设定修正 · 账 = 历史',content:texts[1]},
-      {title:'设定修正记录 · 06/19',content:texts[2]},
-      {title:'能力机制铁律',content:texts[3]}
-    ];
-    dataLoaded.outline=true;
-    renderOutline();renderPatches();
-  }catch(e){console.error('大纲数据加载失败',e)}
-}
-function loadData(){loadCoreData()}
 
 function escapeHtml(value){
   return String(value).replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
@@ -262,7 +240,7 @@ function renderOverview(){
   </div>
   <div class="card" style="margin-bottom:24px">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px;color:#fff">📊 各章字数分布</div>
-    <div id="cssBarChart" style="display:flex;align-items:flex-end;gap:3px;height:220px;padding:0 4px;overflow-x:auto"></div>
+    <div style="position:relative;height:300px;width:100%"><canvas id="barChart"></canvas></div>
   </div>
   <div class="card">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px;color:#fff">🔥 人物出场热力图</div>
@@ -270,30 +248,28 @@ function renderOverview(){
   </div>`;
   panel.innerHTML=html;
 
-  renderCssBarChart();
-  renderHeatmap();
-}
-
-function renderCssBarChart(){
-  const container=document.getElementById('cssBarChart');
-  if(!container||!chaptersData.length)return;
-  const values=chaptersData.map(ch=>ch.chars_with_punct);
-  const max=Math.max(...values);
-  const barHeight=max>0?180/max:0;
-  let html='';
+  const labels=[],values=[];
   for(let i=0;i<chaptersData.length;i++){
-    const h=Math.max(2,Math.round(values[i]*barHeight));
-    const pct=Math.round(values[i]/max*100);
-    html+='<div style="flex:1;min-width:6px;max-width:18px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;height:100%" title="第'+(i+1)+'章: '+values[i].toLocaleString()+' 字">';
-    html+='<div style="width:100%;height:'+h+'px;background:rgba(168,71,50,0.62);border:1px solid rgba(198,109,85,0.5);border-radius:2px 2px 0 0;transition:background .15s;cursor:pointer" onmouseenter="this.style.background=\'rgba(196,90,60,0.85)\'" onmouseleave="this.style.background=\'rgba(168,71,50,0.62)\'"></div>';
-    if(chaptersData.length<=40||i%Math.ceil(chaptersData.length/20)===0){
-      html+='<div style="font-size:9px;color:#555;margin-top:3px;white-space:nowrap;transform:rotate(-45deg);transform-origin:top center">'+(i+1)+'</div>';
-    }else{
-      html+='<div style="margin-top:3px"></div>';
-    }
-    html+='</div>';
+    labels.push('第'+(i+1)+'章');
+    values.push(chaptersData[i].chars_with_punct);
   }
-  container.innerHTML=html;
+  const chartCanvas=document.getElementById('barChart');
+  if(typeof Chart==='undefined'){
+    chartCanvas.parentElement.innerHTML='<p style="color:#888;padding:32px;text-align:center">图表组件未加载；章节与统计数据仍可正常浏览。</p>';
+  }else{
+    const ctx=chartCanvas.getContext('2d');
+    chartInstance=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{label:'字数',data:values,backgroundColor:'rgba(168,71,50,0.62)',borderColor:'rgba(198,109,85,1)',borderWidth:1,borderRadius:3}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+' 字'}}},
+        scales:{x:{ticks:{color:'#666',font:{size:10},maxRotation:45},grid:{display:false}},y:{ticks:{color:'#666'},grid:{color:'#1e1e3a'}}}
+      }
+    });
+  }
+
+  renderHeatmap();
 }
 
 function renderHeatmap(){
@@ -546,7 +522,6 @@ function switchTab(name){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
   document.querySelectorAll('.bottom-btn[data-mobile-tab]').forEach(b=>b.classList.toggle('active',b.dataset.mobileTab===name));
   if(name==='chapters')updateSidebarVisibility();
-  if(name==='outline'||name==='patches')loadOutlineData();
   saveReaderState();
   window.scrollTo({top:0,behavior:'smooth'});
 }
